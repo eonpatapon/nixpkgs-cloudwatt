@@ -40,7 +40,7 @@ in rec {
   };
 
   images = {
-    contrailApi = buildContrailImageWithPerp "opencontrail/api"
+    contrailApi = buildContrailImageWithPerp "opencontrail/apiToTestSecret"
       "${contrail32Cw.api}/bin/contrail-api --conf_file ${configuration.api}";
     contrailDiscovery = buildContrailImageWithPerp "opencontrail/discovery"
       "${contrail32Cw.discovery}/bin/contrail-discovery --conf_file ${configuration.discovery}";
