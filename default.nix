@@ -65,5 +65,12 @@ in rec {
     debianPackages.contrailVrouterUbuntu_3_13_0_83_generic
     debianPackages.contrailVrouterUserland
   ];
+
+  vaultSync = pkgs.callPackage ./pkgs/vault-sync {};
+
+  vaultSyncImagePerp = lib.buildImageWithPerp {
+    name = "vault-sync";
+    command = "${vaultSync}/bin/vault-sync";
+  };
 }
 
