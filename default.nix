@@ -15,7 +15,7 @@ let pkgs = import nixpkgs {};
     cwPkgs = rec {
       ci = callPackage ./ci { };
 
-      perp = callPackage ./pkgs/perp { }; 
+      perp = callPackage ./pkgs/perp { };
 
       contrail32Cw = callPackages ./pkgs/contrail32Cw {
         contrailPath = contrail;

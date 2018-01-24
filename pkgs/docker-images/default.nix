@@ -1,13 +1,38 @@
 { pkgs, lib, contrail32Cw }:
 
 let
+
   configuration = import ./configuration.nix pkgs;
 
-  buildContrailImageWithPerp = name: command: preStartScript:
+  buildContrailImageWithPerp = name: executable: preStartScript:
     lib.buildImageWithPerp {
-      inherit name command preStartScript;
+      inherit name executable preStartScript;
+      fromImage = lib.images.kubernetesBaseImage;
       extraCommands = "chmod u+w etc; mkdir -p var/log/contrail etc/contrail";
   };
+
+  gremlinServerStart = pkgs.writeShellScriptBin "gremlin-server" ''
+    export GREMLIN_DUMP_CASSANDRA_SERVERS=opencontrail-config-cassandra.service
+    # We can't modify the parent image, so we do it at runtime
+    if [ -f /etc/prometheus/prometheus_jmx_java8.yml ] && ! grep -q 'metrics<name'
+    then
+      echo "- pattern: 'metrics<name=(.+)><>(.+):'" >> /etc/prometheus/prometheus_jmx_java8.yml
+    fi
+    if [ -f /etc/default/prometheus_jmx ]
+    then
+      source /etc/default/prometheus_jmx
+      export JAVA_OPTIONS="$JAVA_OPTIONS -Dcom.sun.management.jmxremote $PROM_OPTS"
+    fi
+    ${contrail32Cw.tools.contrailGremlin}/bin/gremlin-dump ${configuration.gremlinDumpPath} && \
+    ${contrail32Cw.tools.gremlinServer.gremlinServer}/bin/gremlin-server ${configuration.gremlinServer}
+  '';
+
+  gremlinSyncStart = pkgs.writeShellScriptBin "gremlin-sync" ''
+    consul-template-wrapper -- -once \
+      -template "${configuration.gremlinSync}:/run/consul-template-wrapper/vars" && \
+    source /run/consul-template-wrapper/vars && \
+    ${contrail32Cw.tools.contrailGremlin}/bin/gremlin-sync
+  '';
 
 in
 {
@@ -32,4 +57,13 @@ in
   contrailSvcMonitor = buildContrailImageWithPerp "opencontrail/svc-monitor"
     "${contrail32Cw.svcMonitor}/bin/contrail-svc-monitor --conf_file /etc/contrail/contrail-svc-monitor.conf"
     ''consul-template-wrapper -- -once  -template="${configuration.svc-monitor}:/etc/contrail/contrail-svc-monitor.conf"'';
+  gremlinServer = lib.buildImageWithPerps {
+    name = "gremlin/server";
+    fromImage = lib.images.javaJreImage;
+    services = [
+      { name = "gremlin-server"; executable = "${gremlinServerStart}/bin/gremlin-server";
+        cwd = "${contrail32Cw.tools.gremlinServer.gremlinServer}/opt"; }
+      { name = "gremlin-sync"; executable = "${gremlinSyncStart}/bin/gremlin-sync"; }
+    ];
+  };
 }

@@ -1,6 +1,7 @@
 pkgs:
 
-{
+rec {
+
 discovery = pkgs.writeTextFile {
   name = "contrail-discovery.conf.ctmpl";
   text = ''
@@ -188,4 +189,38 @@ svc-monitor = pkgs.writeTextFile {
     aaa_mode = no-auth
     '';
   };
-}		
+
+  gremlinDumpPath = "/tmp/dump.gson";
+
+  gremlinSync = pkgs.writeTextFile {
+    name = "vars.ctmpl";
+    text = ''
+      export GREMLIN_SYNC_CASSANDRA_SERVERS=opencontrail-config-cassandra.service
+      export GREMLIN_SYNC_RABBIT_SERVER=opencontrail-queue.service:5672
+      {{ with secret "secret/opencontrail" -}}
+      export GREMLIN_SYNC_RABBIT_PASSWORD={{ .Data.queue_password }}
+      {{- end }}
+      export GREMLIN_SYNC_RABBIT_VHOST=opencontrail
+      export GREMLIN_SYNC_RABBIT_USER=opencontrail
+    '';
+  };
+
+  gremlinServer = pkgs.writeTextFile {
+    name = "server.yaml";
+    text = builtins.readFile ./config/gremlin-server/server.yaml + ''
+      graphs: {
+        graph: ${gremlinServerProperties}
+      }
+    '';
+  };
+
+  gremlinServerProperties = pkgs.writeTextFile {
+    name = "server.properties";
+    text = ''
+      gremlin.graph=org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph
+      gremlin.tinkergraph.vertexIdManager=UUID
+      gremlin.tinkergraph.graphFormat=graphson
+      gremlin.tinkergraph.graphLocation=${gremlinDumpPath}
+    '';
+  };
+}
