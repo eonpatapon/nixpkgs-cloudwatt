@@ -37,7 +37,7 @@ rec {
       echo -n ${outputString} > $out
     '';
 
-  genPerpRcMain = { name, executable, preStartScript ? "", cwd ? "" }: pkgs.writeTextFile {
+  genPerpRcMain = { name, executable, preStartScript ? "", chdir ? "", runAsRoot ? false }: pkgs.writeTextFile {
     name = "${name}-rc.main";
     executable = true;
     destination = "/etc/perp/${name}/rc.main";
@@ -52,7 +52,8 @@ rec {
       ${preStartScript}
 
       OPTIONS=""
-      [ "${cwd}" != "" ] && OPTIONS="$OPTIONS -c ${cwd}"
+      ${if chdir != "" then ''OPTIONS="$OPTIONS -c ${chdir}"'' else ""}
+      ${if ! runAsRoot then ''OPTIONS="$OPTIONS -u nobody"'' else ""}
 
       start() {
         exec runtool $OPTIONS ${executable}
