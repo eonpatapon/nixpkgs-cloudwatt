@@ -1,4 +1,5 @@
 {
+    "autonomous_system": 64512,
     "log_level": "SYS_INFO",
     "api": {
         "log_level": "SYS_DEBUG"

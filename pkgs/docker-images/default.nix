@@ -3,7 +3,7 @@
 let
 
   config = {
-    contrail = import ./config/contrail.nix pkgs;
+    contrail = import ./config/contrail.nix { inherit pkgs contrail32Cw; };
     gremlin = import ./config/gremlin/config.nix { inherit pkgs contrail32Cw; };
     locksmith = import ./config/locksmith/config.nix { inherit pkgs; };
   };
@@ -131,6 +131,23 @@ in
         -template="${config.contrail.svcMonitor}:/etc/contrail/contrail-svc-monitor.conf" \
         -template="${config.contrail.vncApiLib}:/etc/contrail/vnc_api_lib.ini"
     '';
+  };
+
+  contrailProvision = lib.buildImageWithPerp {
+    name = "opencontrail/provision";
+    fromImage = lib.images.kubernetesBaseImage;
+    preStartScript = ''
+      consul-template-wrapper -- -once \
+        -template "${config.contrail.keystoneEnv}:/run/consul-template-wrapper/env"
+      ${waitFor}/bin/wait-for -t 300 \
+        ${config.contrail.services.api.dns}:${toString config.contrail.services.api.port}
+    '';
+    environmentFile = "/run/consul-template-wrapper/env";
+    command = ''
+      consul-template-wrapper -- \
+        -template "${config.contrail.provision}:/run/consul-template-wrapper/provision.json:${config.contrail.runProvision}/bin/run-provision"
+    '';
+    contents = [ contrail32Cw.tools.contrailApiCliWithExtra ];
   };
 
   locksmithWorker = lib.buildImageWithPerp {

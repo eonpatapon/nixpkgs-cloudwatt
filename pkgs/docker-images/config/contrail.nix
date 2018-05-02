@@ -1,4 +1,4 @@
-pkgs:
+{ pkgs, contrail32Cw }:
 
 let
 
@@ -380,6 +380,54 @@ in rec {
       AUTHN_SERVER = identity-admin.dev0.loc.cloudwatt.net
       AUTHN_PORT   = 35357
       AUTHN_URL    = /v2.0/tokens
+    '';
+  };
+
+  keystoneEnv = pkgs.writeTextFile {
+    name = "env";
+    text = catalogOpenstackHeader + ''
+      OS_AUTH_TYPE=v2password
+      OS_AUTH_URL={{ $catalog.identity.admin_url }}
+      OS_TENANT_NAME=service
+      OS_USERNAME=opencontrail
+      OS_PASSWORD=${secret "service_password"}
+      CONTRAIL_API_HOST=${services.api.dns}
+      CONTRAIL_API_CLI_CONFIG_DIR=/tmp
+    '';
+  };
+
+  runProvision = pkgs.writeShellScriptBin "run-provision" ''
+    ${contrail32Cw.tools.contrailApiCliWithExtra}/bin/contrail-api-cli --ns contrail_api_cli.provision provision -f /run/consul-template-wrapper/provision.json
+  '';
+
+  provision = pkgs.writeTextFile {
+    name = "provision.json";
+    text = ''
+      {{ $opencontrail := keyOrDefault "/config/opencontrail/data" "{}" | parseJSON -}}
+      {
+        "name": "bgp-routers",
+        "namespace": "contrail_api_cli.provision",
+        "defaults": {
+          "bgp-router": {
+            "router-address-families": ["route-target", "inet-vpn", "erm-vpn"]
+          }
+        },
+        "provision": {
+          "global-asn": {
+            "asn": {{ $opencontrail.autonomous_system }}
+          },
+          "bgp-router": [
+            {{- range $index, $data := service "opencontrail-control" -}}
+              {{- if $index }},{{ end }}
+              {
+                "router-ip": "{{- $data.NodeAddress -}}",
+                "router-name": "{{- $data.Node -}}",
+                "router-asn": {{- $opencontrail.autonomous_system -}}
+              }
+            {{- end }}
+          ]
+        }
+      }
     '';
   };
 }
