@@ -281,6 +281,62 @@ Then starting `fluentd` with this configuration is quite simple:
     2018-04-04 16:47:20 +0200 [info]: parsing config file is succeeded path="/nix/store/bx78gynmzmlich02npdkzahm9s6fbxln-fluentd.conf"
     [...]
 
+Consul template integration
+===========================
+
+A simple consul template integration is provided.
+
+When configured, `consul-template` will be run before any commands that are
+defined in `preStartScript`.
+
+You can declaratively provide your template configuration in the `consul`
+attribute of any service:
+
+      rec {
+        name = "service2";
+        command = "${service2}/bin/service2 --conf ${consul.service2.out}";
+        consul = lib.consulConf {
+          templates = {
+            service2 = { srcPath = template; dstFile = "service2.conf"; };
+            other = { srcPath = template2; dstPath = "/etc"; dstFile = "otherConf.conf"; };
+          };
+        };
+        preStartScript = ''
+            mkdir /var/log/service2;
+        '';
+      }
+
+Templates are rendered in `/run/consul-template-wrapper` directory. If `dstPath`
+is specified a symbolic link is created. You can retrieve the output path of any
+template using the `out` attribute.
+
+In the example above the following will be created:
+
+    * /run/consul-template-wrapper/service2.conf
+    * /run/consul-template-wrapper/otherConf.conf
+    * /etc/otherConf.conf -> /run/consul-template-wrapper/otherConf.conf
+
+Once mode
+---------
+
+By default, `consul-template` is run in `once` mode. You can override this behaviour and
+provide an action when the template is rendered:
+
+      rec {
+        name = "service2";
+        consul = lib.consulConf {
+          once = false;
+          templates = {
+            service2 = {
+              srcPath = "${template}";
+              dstFile = "service2-conf";
+              action = "${service2}/bin/service2 --conf ${consul.service2.out}";
+            };
+          };
+        };
+      }
+
+In this case, the `command` of the service will be `consul-template` itself.
 
 How Docker images are pushed
 ============================

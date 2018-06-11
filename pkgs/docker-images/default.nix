@@ -8,15 +8,15 @@ let
     locksmith = import ./config/locksmith/config.nix { inherit pkgs; };
   };
 
-  buildContrailImageWithPerp = { name, command, preStartScript, fluentd}:
+  buildContrailImageWithPerp = { name, command, preStartScript ? "", consul ? {}, fluentd}:
     buildContrailImageWithPerps {
       inherit name;
-        services = [
-           {name = builtins.replaceStrings ["/"] ["-"] name;
-            user = "root";
-            inherit command preStartScript fluentd;
-           }
-        ];
+      services = [
+         {name = builtins.replaceStrings ["/"] ["-"] name;
+          user = "root";
+          inherit command preStartScript consul fluentd;
+         }
+      ];
     };
 
   buildContrailImageWithPerps = { name, services }:
@@ -78,13 +78,16 @@ in
   contrailAnalytics = buildContrailImageWithPerps {
     name = "opencontrail/analytics";
     services = [
-      {
+      rec {
         name = "opencontrail-analytics-api";
-        command = "${contrail32Cw.analyticsApi}/bin/contrail-analytics-api --conf_file /etc/contrail/contrail-analytics-api.conf";
-        preStartScript = my_ip + ''
-         /usr/sbin/consul-template-wrapper --token-file=/run/vault-token-analytics-api/vault-token -- -once \
-         -template="${config.contrail.analyticsApi}:/etc/contrail/contrail-analytics-api.conf"
-        '';
+        command = "${contrail32Cw.analyticsApi}/bin/contrail-analytics-api --conf_file ${consul.templates.api.out}";
+        preStartScript = my_ip;
+        consul = lib.consulConf {
+          tokenFile = "/run/vault-token-analytics-api/vault-token";
+          templates = {
+            api = { srcPath = config.contrail.analyticsApi; dstFile = "contrail-analytics-api.conf"; };
+          };
+        };
         user = "root";
         fluentd = config.contrail.fluentdForPythonService;
       }
@@ -119,25 +122,27 @@ in
   };
 
 
-  contrailSchemaTransformer = buildContrailImageWithPerp {
+  contrailSchemaTransformer = buildContrailImageWithPerp rec {
     name = "opencontrail/schema-transformer";
-    command = "${contrail32Cw.schemaTransformer}/bin/contrail-schema --conf_file /etc/contrail/contrail-schema-transformer.conf";
-    preStartScript = ''
-      consul-template-wrapper -- -once \
-        -template="${config.contrail.schemaTransformer}:/etc/contrail/contrail-schema-transformer.conf" \
-        -template="${config.contrail.vncApiLib}:/etc/contrail/vnc_api_lib.ini"
-    '';
+    command = "${contrail32Cw.schemaTransformer}/bin/contrail-schema --conf_file ${consul.templates.schema.out}";
+    consul = lib.consulConf {
+      templates = {
+        schema = { srcPath = config.contrail.schemaTransformer; dstFile = "contrail-schema-transformer.conf"; };
+        vncApiLib = { srcPath = config.contrail.vncApiLib; dstPath = "/etc/contrail"; dstFile = "vnc_api_lib.ini"; };
+      };
+    };
     fluentd = config.contrail.fluentdForPythonService;
   };
 
-  contrailSvcMonitor = buildContrailImageWithPerp {
+  contrailSvcMonitor = buildContrailImageWithPerp rec {
     name = "opencontrail/svc-monitor";
-    command = "${contrail32Cw.svcMonitor}/bin/contrail-svc-monitor --conf_file /etc/contrail/contrail-svc-monitor.conf";
-    preStartScript = ''
-      consul-template-wrapper -- -once \
-        -template="${config.contrail.svcMonitor}:/etc/contrail/contrail-svc-monitor.conf" \
-        -template="${config.contrail.vncApiLib}:/etc/contrail/vnc_api_lib.ini"
-    '';
+    command = "${contrail32Cw.svcMonitor}/bin/contrail-svc-monitor --conf_file ${consul.templates.svcMonitor.out}";
+    consul = lib.consulConf {
+      templates = {
+        svcMonitor = { srcPath = config.contrail.svcMonitor; dstFile = "contrail-svc-monitor.conf"; };
+        vncApiLib = { srcPath = config.contrail.vncApiLib; dstPath = "/etc/contrail"; dstFile = "vnc_api_lib.ini"; };
+      };
+    };
     fluentd = config.contrail.fluentdForPythonService;
   };
 
@@ -166,11 +171,15 @@ in
           };
         };
       }
-      {
+      rec {
         name = "gremlin-sync";
-        preStartScript = config.gremlin.syncPreStart;
-        environmentFile = "/run/consul-template-wrapper/env";
         command = "${contrail32Cw.tools.contrailGremlin}/bin/gremlin-sync";
+        consul = lib.consulConf {
+          templates = {
+            sync = { srcPath = config.gremlin.syncEnv; dstFile = "env" };
+          };
+        };
+        environmentFile = consul.templates.sync.out;
         fluentd = {
           source = {
             type = "stdout";
@@ -189,11 +198,15 @@ in
     name = "gremlin/fsck";
     fromImage = lib.images.kubernetesBaseImage;
     services = [
-      {
+      rec {
         name = "gremlin-fsck";
-        preStartScript = config.gremlin.fsckPreStart;
-        environmentFile = "/run/consul-template-wrapper/env";
         command = "${contrail32Cw.tools.contrailApiCliWithExtra}/bin/contrail-api-cli fsck";
+        consul = lib.consulConf {
+          templates = {
+            fsck = { srcPath = config.gremlin.fsckEnv; dstFile = "env" };
+          };
+        };
+        environmentFile = consul.templates.fsck.out;
         fluentd = {
           source = {
             type = "stdout";

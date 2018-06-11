@@ -12,7 +12,7 @@ let
     tools = callLibs ./tools.nix;
     fluentd = callLibs ./fluentd.nix;
 
-    inherit (image) buildImageWithPerp buildImageWithPerps runDockerComposeStack genPerpRcMain dockerPushImage;
+    inherit (image) buildImageWithPerp buildImageWithPerps runDockerComposeStack genPerpRcMain dockerPushImage consulConf;
 
     inherit (debian) mkDebianPackage publishDebianPkg;
 

@@ -117,8 +117,4 @@ rec {
     '';
   };
 
-  syncPreStart = ''
-    consul-template-wrapper -- -once -template "${syncEnv}:/run/consul-template-wrapper/env"
-  '';
-
 }

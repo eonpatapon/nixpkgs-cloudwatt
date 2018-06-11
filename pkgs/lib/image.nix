@@ -59,6 +59,43 @@ rec {
     else
       args // { command = "runuid ${user} ${command}"; };
 
+  consulConf = with pkgs.lib; { templates, once ? true, tokenFile ? "" }:
+    let
+      defaultOutPath = "/run/consul-template-wrapper";
+
+      genOutPath = name: { srcPath, dstPath ? defaultOutPath, dstFile, action ? "", ...}@args:
+        let
+          out = "${defaultOutPath}/${dstFile}";
+        in
+          {
+            inherit srcPath action out;
+          } // optionalAttrs (dstPath != defaultOutPath) {
+            preCmd = "mkdir -p ${dstPath} && ln -sf ${out} ${dstPath}/${dstFile}";
+          };
+
+      newTemplates = mapAttrs genOutPath templates;
+
+      genTemplateOption = name: { srcPath, out, action ? "", ... }:
+        "-template='${srcPath}:${out}${optionalString (action != "") ":${action}"}'";
+
+      wrapperOptions = []
+        ++ optional (tokenFile != "") "--token-file=${tokenFile}";
+
+      options = attrValues (mapAttrs genTemplateOption newTemplates)
+        ++ optional once "-once";
+
+      preCmds = mapAttrsToList (name: t: if t ? "preCmd" then t.preCmd else "") newTemplates;
+
+      cmd = ''
+        ${concatStringsSep "\n" preCmds}
+        consul-template-wrapper ${concatStringsSep " " wrapperOptions} -- ${concatStringsSep " " options};
+      '';
+    in
+      {
+        inherit once cmd;
+        templates = newTemplates;
+      };
+
   runPreScript = { preStartScript ? "", command, name, ... }@args:
     let
       start = pkgs.writeShellScriptBin "start-${name}" ''
@@ -76,18 +113,27 @@ rec {
       args // { command = "runenv ${environmentFile} ${command}"; }
     else args;
 
+  runConsul = { consul ? {}, preStartScript ? "", ...}@args:
+    if consul ? "cmd" then
+      if consul.once then
+        args // { preStartScript = consul.cmd + preStartScript; }
+      else
+        args // { command = consul.cmd; }
+    else args;
+
   genPerpRcMain = args@{
     name,
-    command,
+    command ? "",
     preStartScript ? "",
     chdir ? "",
     oneShot ? false,
     user ? "nobody",
     environmentFile ? "",
+    consul ? {},
     ...
   }:
     let
-      newArgs = runOptions (runAsUser (runPreScript (runWithEnv args)));
+      newArgs = runOptions (runAsUser (runPreScript (runWithEnv (runConsul args))));
       oneShotScript = pkgs.lib.optionalString oneShot ''
         if [ -f /var/run/perp/${name}.already-run ]; then
           echo "Disable the oneshot perp service ${name} since it has been already executed"
@@ -134,13 +180,14 @@ rec {
     extraCommands ? "",
     user ? "nobody",
     environmentFile ? "",
+    consul ? {},
     fluentd ? {},
   }:
     buildImageWithPerps {
       inherit name fromImage contents extraCommands;
       services = [
         {
-          inherit preStartScript command user environmentFile fluentd;
+          inherit preStartScript command user environmentFile consul fluentd;
           name = builtins.replaceStrings ["/"] ["-"] name;
         }
       ];
