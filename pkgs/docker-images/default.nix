@@ -14,6 +14,8 @@ callPackages ./contrail { inherit contrailPath; } //
 
   gremlinFsck = callPackage ./gremlin-fsck { };
 
+  neutron = callPackage ./neutron { };
+
   skydiveAnalyzer = callPackage ./skydive { };
 
   pulled = callPackages ./pulled.nix { };
