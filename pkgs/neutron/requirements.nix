@@ -397,6 +397,21 @@ let
       };
     };
 
+    "certifi" = python.mkDerivation {
+      name = "certifi-2016.2.28";
+      src = pkgs.fetchurl { url = "https://files.pythonhosted.org/packages/5c/f8/f6c54727c74579c6bbe5926f5deb9677c5810a33e11da58d1a4e2d09d041/certifi-2016.2.28.tar.gz"; sha256 = "5e8eccf95924658c97b990b50552addb64f55e1e3dfe4880456ac1f287dc79d0"; };
+      doCheck = commonDoCheck;
+      checkPhase = "";
+      installCheckPhase = "";
+      buildInputs = commonBuildInputs;
+      propagatedBuildInputs = [ ];
+      meta = with pkgs.stdenv.lib; {
+        homepage = "http://certifi.io/";
+        license = "ISC";
+        description = "Python package for providing Mozilla's CA Bundle.";
+      };
+    };
+
     "cffi" = python.mkDerivation {
       name = "cffi-1.5.2";
       src = pkgs.fetchurl { url = "https://files.pythonhosted.org/packages/c7/bb/2e1ba0ef25477929b44040800a880f02b42efb757e06a9d8899591582ba4/cffi-1.5.2.tar.gz"; sha256 = "da9bde99872e46f7bb5cff40a9b1cc08406765efafb583c704de108b6cb821dd"; };
@@ -643,6 +658,42 @@ let
         homepage = "http://www.openstack.org/";
         license = "License :: OSI Approved :: Apache Software License";
         description = "Useful additions to futures, from the future.";
+      };
+    };
+
+    "gevent" = python.mkDerivation {
+      name = "gevent-1.1.2";
+      src = pkgs.fetchurl { url = "https://files.pythonhosted.org/packages/43/8f/cb3224a0e6ab663547f45c10d0651cfd52633fde4283bf68d627084df8cc/gevent-1.1.2.tar.gz"; sha256 = "cb15cf73d69a2eeefed330858f09634e2c50bf46da9f9e7635730fcfb872c02c"; };
+      doCheck = commonDoCheck;
+      checkPhase = "";
+      installCheckPhase = "";
+      buildInputs = commonBuildInputs;
+      propagatedBuildInputs = [
+      self."greenlet"
+    ];
+      meta = with pkgs.stdenv.lib; {
+        homepage = "http://www.gevent.org/";
+        license = licenses.mit;
+        description = "Coroutine-based network library";
+      };
+    };
+
+    "geventhttpclient" = python.mkDerivation {
+      name = "geventhttpclient-1.3.1";
+      src = pkgs.fetchurl { url = "https://files.pythonhosted.org/packages/35/41/33b552d780c1fef6427cbb314a69e8303a59e51b6aac25e07ded46aef6fa/geventhttpclient-1.3.1.tar.gz"; sha256 = "bd87af8854f5fb05738916c8973671f7035568aec69b7c842887d6faf9c0a01d"; };
+      doCheck = commonDoCheck;
+      checkPhase = "";
+      installCheckPhase = "";
+      buildInputs = commonBuildInputs;
+      propagatedBuildInputs = [
+      self."certifi"
+      self."gevent"
+      self."six"
+    ];
+      meta = with pkgs.stdenv.lib; {
+        homepage = "http://github.com/gwik/geventhttpclient";
+        license = "LICENSE-MIT";
+        description = "http client library for gevent";
       };
     };
 
