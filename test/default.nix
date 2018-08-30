@@ -7,10 +7,6 @@
 
   perp = callPackage ./perp.nix { };
 
-  contrail = callPackage ./contrail.nix {
-    inherit contrailPath cwPkgs contrailPkgs;
-  };
-
   contrailLoadDatabase = callPackage ./contrail-load-database.nix {
     inherit contrailPath contrailPkgs;
   };
