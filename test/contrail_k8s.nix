@@ -220,22 +220,17 @@ let
       contrail.vrouterAgent = {
         enable = true;
         provisionning = false;
-        configurationFilepath = "${vrouterConfig ip}";
-        contrailInterfaceName = "eth2";
-      };
-
-      # TODO: add in compute module
-      systemd.services.addVGW = {
-        serviceConfig.Type = "oneshot";
-        serviceConfig.RemainAfterExit = true;
-        wantedBy = [ "multi-user.target" ];
-        after = [ "contrailVrouterAgent.service" ];
-        script = ''
-          ${cwPkgs.waitFor}/bin/wait-for localhost:9091 -t 300
-          ${contrailPkgs.configUtils}/bin/provision_vgw_interface.py --oper create \
-              --interface vgw --subnets ${publicNetPrefix}/${toString publicNetPrefixLen} --routes 0.0.0.0/0 \
-              --vrf "default-domain:service:${publicNetName}:${publicNetName}"
-        '';
+        vhostIP = "192.168.2.${ip}";
+        vhostGateway = "192.168.2.1";
+        vhostInterface = "eth2";
+        discoveryHost = "opencontrail-discovery.service";
+        virtualGateways = [
+          {
+            networkName = "public";
+            networkCIDR = "${publicNetPrefix}/${toString publicNetPrefixLen}";
+            routes = "0.0.0.0/0";
+          }
+        ];
       };
 
     };

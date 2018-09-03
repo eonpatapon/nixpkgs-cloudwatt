@@ -12,6 +12,6 @@ in {
     owner = "nlewo";
     repo = "nixpkgs-contrail";
     # Belong to the master branch
-    rev = "856e0d3f7e58d5c51aae86bc3a12732b3c33baf4";
-    sha256 = "15qfhy9xb3rfpzh3nz3342ak25nshb50sfspy2y85bqk1dpdxdv5";};
+    rev = "385a9c744a5962b428991a90afc5c2485f755e0b";
+    sha256 = "1d87dijzx043l4kldgd6fz2105a27498m60iajz9amg05rksfrds";};
   }
