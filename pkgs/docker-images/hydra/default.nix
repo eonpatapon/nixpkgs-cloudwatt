@@ -3,11 +3,18 @@
 with lib;
 
 let hydra = pkgs.hydra.overrideAttrs(old: {
-      # This patch is for the github PR plugin and could be removed on 18.09
-      patches = [ (fetchpatch {
-        url = https://github.com/NixOS/hydra/commit/028ecf7c1facc0e8a060c75f3b3abbc390529171.patch;
-        sha256 = "13aqsnswfv900r9zfnhy9y466b5h118pi2d2snf4zkjqvm4aj31y";
-        })];
+      patches = [
+        # This patch is for the github PR plugin and could be removed on 18.09
+        (fetchpatch {
+          url = https://github.com/NixOS/hydra/commit/028ecf7c1facc0e8a060c75f3b3abbc390529171.patch;
+          sha256 = "13aqsnswfv900r9zfnhy9y466b5h118pi2d2snf4zkjqvm4aj31y";
+        })
+        # Add GitlabPulls plugin
+        (fetchpatch {
+          url = https://github.com/nlewo/hydra/commit/f90cdcb2e5dde7716d9ed83653644e4f8b2e5849.patch;
+          sha256 = "1z502pzbcpqad61fwf7xnmgqshdxql7zzja5jpk4f1pvyk732r03";
+        })
+      ];
       buildInputs = old.buildInputs ++ [ perlPackages.CryptSSLeay ];
       });
     hydraServerCmd = "${hydra}/bin/hydra-server hydra-server -f -h 0.0.0.0 -p 3000 --max_spare_servers 5 --max_servers 25 --max_requests 100 -d";
