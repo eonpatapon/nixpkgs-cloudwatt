@@ -7,10 +7,6 @@
 
   perp = callPackage ./perp.nix { };
 
-  contrail = callPackage ./contrail.nix {
-    inherit contrailPath cwPkgs contrailPkgs;
-  };
-
   contrailLoadDatabase = callPackage ./contrail-load-database.nix {
     inherit contrailPath contrailPkgs;
   };
@@ -25,6 +21,10 @@
 
   keystoneK8S = callPackage ./keystone_k8s.nix {
     inherit cwPkgs;
+  };
+
+  contrailK8S = callPackage ./contrail_k8s.nix {
+    inherit contrailPath cwPkgs contrailPkgs;
   };
 
   # to run these tests:

@@ -238,7 +238,7 @@ in {
     services.kubernetes = {
       roles = ["master" "node"];
       verbose = false;
-      clusterCidr = "10.1.0.0/16";
+      clusterCidr = "10.44.44.0/24";
       caFile = "${certs.master}/ca.pem";
       etcd = {
         servers = ["https://etcd.${cfg.domain}:2379"];
