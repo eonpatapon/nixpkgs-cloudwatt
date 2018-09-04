@@ -33,7 +33,7 @@ let
         enable = true;
         configurationFilepath = contrailVrouterAgentFilepath;
         provisionning = false;
-        contrailInterfaceName = "eth2";
+        vhostInterface = "eth2";
       };
 
       # We use the MAC address to set the hostname and the IP address
