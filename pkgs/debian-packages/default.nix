@@ -34,6 +34,10 @@ in
       contrailPkgs.vrouterAgent contrailPkgs.vrouterPortControl
       contrailPkgs.vrouterUtils contrailPkgs.vrouterNetns ];
     description = "Vrouter userland programs (contrail-vrouter-agent, vrouter utilities, opencontrail-netns tools)";
+    maintainerScripts = [
+      (pkgs.writeScript "postinst" (builtins.readFile ./contrail/postinst))
+      (pkgs.writeScript "postrm" (builtins.readFile ./contrail/postrm))
+    ];
     # This links all binaries files found in the contents to the
     # /usr/bin directory of the target system
     script = ''
@@ -45,6 +49,8 @@ in
       echo "Link binaries found in contents"
       cat files | xargs -I'{}' -t ln -s '{}' usr/bin/
       rm files
+      mkdir -p etc/init
+      cp ${./contrail/contrail-vrouter-agent.upstart} etc/init/contrail-vrouter-agent.conf
     '';
     };
 
