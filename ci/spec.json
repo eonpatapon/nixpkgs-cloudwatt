@@ -11,7 +11,7 @@
   "keepnr": 3,
   "inputs": {
     "cloudwatt": {
-      "value": "https://github.com/nlewo/nixpkgs-cloudwatt master keepDotGit",
+      "value": "https://git.corp.cloudwatt.com/applications/nixpkgs-cloudwatt master keepDotGit",
       "type": "git",
       "emailresponsible": false
     },
@@ -21,8 +21,8 @@
       "emailresponsible": false
     },
     "pulls": {
-        "type": "githubpulls",
-        "value": "nlewo nixpkgs-cloudwatt",
+        "type": "gitlabpulls",
+        "value": "https://git.corp.cloudwatt.com 1683",
         "emailresponsible": false
     }
   }

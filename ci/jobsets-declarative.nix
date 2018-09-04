@@ -16,7 +16,7 @@ let
       inputs = {
         cloudwatt = {
           type = "git";
-          value = "https://github.com/${info.head.repo.owner.login}/${info.head.repo.name}.git ${info.head.ref} keepDotGit";
+          value = "${info.source_repo_url} ${info.source_branch} keepDotGit";
           emailresponsible = false;
         };
         bootstrap_pkgs = {
@@ -41,7 +41,7 @@ let
       hidden = false;
       inputs = {
         cloudwatt = {
-          value = "https://github.com/nlewo/nixpkgs-cloudwatt master keepDotGit";
+          value = "https://git.corp.cloudwatt.com/applications/nixpkgs-cloudwatt master keepDotGit";
           type = "git";
           emailresponsible = false;
         };
@@ -80,7 +80,7 @@ let
       hidden = false;
       inputs = {
         cloudwatt = {
-          value = "https://github.com/nlewo/nixpkgs-cloudwatt master keepDotGit";
+          value = "https://git.corp.cloudwatt.com/applications/nixpkgs-cloudwatt master keepDotGit";
           type = "git";
           emailresponsible = false;
         };
@@ -109,7 +109,7 @@ let
       hidden = false;
       inputs = {
         cloudwatt = {
-          value = "https://github.com/nlewo/nixpkgs-cloudwatt testing keepDotGit";
+          value = "https://git.corp.cloudwatt.com/applications/nixpkgs-cloudwatt testing keepDotGit";
           type = "git";
           emailresponsible = false;
         };
@@ -133,7 +133,7 @@ let
       hidden = false;
       inputs = {
         cloudwatt = {
-          value = "https://github.com/nlewo/nixpkgs-cloudwatt testing-with-publish keepDotGit";
+          value = "https://git.corp.cloudwatt.com/applications/nixpkgs-cloudwatt testing-with-publish keepDotGit";
           type = "git";
           emailresponsible = false;
         };
