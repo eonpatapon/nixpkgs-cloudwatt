@@ -53,7 +53,7 @@ let
     # Cassandra and contrail-api-server take a while to start and can timeout
     $machine->sleep(600);
     $machine->waitForOpenPort(8082);
-    $machine->waitForUnit("contrailApi.service");
+    $machine->waitForUnit("contrail-api.service");
     $machine->succeed("${pkgs.curl}/bin/curl localhost:8082/virtual-networks");
   '';
 
