@@ -9,16 +9,6 @@ let
 
   contrailConfig = import ./config/contrail_k8s.nix { inherit pkgs cwPkgs cwLibs; };
 
-  createProject = pkgs.writeTextFile {
-    name = "create_project.py";
-    text = ''
-      from contrail_api_cli.resource import Resource
-      d = Resource('domain', fq_name=['default-domain']).fetch()
-      p = Resource('project', fq_name=['default-domain', 'service'], parent=d)
-      p.save()
-    '';
-  };
-
   defaultProvision = with contrailConfig; {
     namespace = "contrail_api_cli.provision";
     defaults = {};
@@ -155,7 +145,6 @@ in {
       postStart = ''
         wait-for opencontrail-api.service:8082 -t 300 -q
         source /etc/openstack/admin.openrc
-        contrail-api-cli exec ${createProject}
         contrail-api-cli provision -f /etc/contrail/provision.json
       '';
     };
