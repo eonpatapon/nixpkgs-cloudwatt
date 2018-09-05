@@ -79,6 +79,7 @@ let
     admin_tenant_name = "service";
     admin_user = "opencontrail";
     admin_password = secret "service_password";
+    region = ''{{ $openstack_region }}'';
   };
 
   containerIP = ''{{- file "/my-ip" -}}'';
