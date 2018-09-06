@@ -158,6 +158,49 @@ It is possible to enable fluentd for only one service.
 When defining a regexp in `format` for example, use `''` and not `"` to surround the regexp.
 With `"`, `\` chars are not preserved.
 
+## Testing regexps at built-time
+
+When you define a regexp it is possible to provide a set of log lines to test the regexp against.
+If the regexp doesn't parse correctly the provided log lines the build will fail.
+
+Instead of doing:
+
+    format = <regexp>;
+
+Do:
+
+    format = {
+      regexp = <regexp>;
+      checks = [ <log> <log> ];
+    };
+
+Example:
+
+    fluentd = {
+      source = {
+        type = "stdout";
+        time_format = "%H:%M:%S.%L";
+        format = {
+          regexp = ''/^(?<time>[^ ]+) (?<funcname>[^ ]+) \[(?<level>[^\]]+)\] (?<message>.*)$/'';
+          checks = [
+            ''13:03:08.688 main.handleNotification [DEBUG] [CREATE] instance_ip/73d08fd0-2945-4aad-818b''
+            ''13:18:12.261 main.handleNotification [DEBUG] [UPDATE] virtual_router/0fa1f6df-a684-4642-9a1e''
+          ];
+        };
+      };
+    };
+
+To do this check a small cli tool provided in the repo is used to validated the regexp.
+You can use it to create new regexps given some input you'd like to parse:
+
+    $ nix-env -f default.nix -iA fluentdRegexpTester
+    installing 'fluentd_regexp_tester-0.1.4'
+    building '/nix/store/q8jlnkrzzab6yk0sgaardq1mqfk5k4l0-user-environment.drv'...
+    created 71 symlinks in user environment
+    $ fluentd-regexp-tester test --time-format '%H:%M:%S.%L' '/^(?<time>[^ ]+) (?<funcname>[^ ]+) \[(?<level>[^\]]+)\] (?<message>.*)$/' '13:03:08.688 main.handleNotification [DEBUG] [CREATE] instance_ip/73d08fd0-2945-4aad-818b'
+    {"funcname"=>"main.handleNotification", "level"=>"DEBUG", "message"=>"[CREATE] instance_ip/73d08fd0-2945-4aad-818b"}
+    1538391788
+
 ## Using different sources
 
 The source type `stdout` we have seen before uses in reality the `named_pipe` source

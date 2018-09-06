@@ -1,6 +1,7 @@
 { pkgs, cwPkgs, ... }:
 
 with builtins;
+with pkgs.lib;
 
 rec {
 
@@ -27,8 +28,11 @@ rec {
           n = if name == "type" then "@type" else name;
           subSection = n: v: "  <${n}>\n${v}\n  </${n}>";
         in
+          # if value is of type { regexp = ...; checks = ...; } we use value.regexp
+          if isAttrs value && value ? "checks" && value ? "regexp" then
+            "  ${n} ${value.regexp}"
           # support for fluentd 1.x
-          if isAttrs value then
+          else if isAttrs value then
             subSection n v
           else if isList value then
             concatStringsSep "\n" (map (subSection n) v)
@@ -92,25 +96,52 @@ rec {
     else
       "";
 
-  genFluentdConf = services: pkgs.writeTextFile {
-    name = "fluentd.conf";
-    text = ''
-      ${pkgs.lib.concatStrings (map genFluentdSource services)}
-      ${pkgs.lib.concatStrings (map genFluentdFilters services)}
-      ${pkgs.lib.concatStrings (map genFluentdMatches services)}
-      <filter>
-        @type generic_metadata
-      </filter>
-      <match openstack.message log.**>
-        @type forward
-        time_as_integer true
-        <server>
-          name local
-          host fluentd.localdomain
-        </server>
-      </match>
-    '';
-  };
+  genFluentdConf = services:
+    let
+      collect = pred: attrs:
+        if isAttrs attrs && pred attrs then
+          [ attrs ]
+        else if isList attrs then
+          concatMap (collect pred) attrs
+        else if isAttrs attrs then
+          concatMap (collect pred) (attrValues attrs)
+        else
+          [];
+      toCheck = collect (hasAttr "checks") services;
+      regexpChecks = { regexp, checks }: map (regexpCheck regexp) checks;
+      regexpCheck = regexp: check: ''
+        ${cwPkgs.fluentdRegexpTester}/bin/fluentd-regexp-tester test '${regexp}' '${check}' >/dev/null
+      '';
+    in pkgs.writeTextFile {
+      name = "fluentd.conf";
+      text = ''
+        ${pkgs.lib.concatStrings (map genFluentdSource services)}
+        ${pkgs.lib.concatStrings (map genFluentdFilters services)}
+        <filter>
+          @type generic_metadata
+        </filter>
+        ${pkgs.lib.concatStrings (map genFluentdMatches services)}
+        <match log.**>
+          @type forward
+          time_as_integer true
+          <server>
+            name local
+            host fluentd.localdomain
+          </server>
+        </match>
+      '';
+      checkPhase = ''
+        ${concatStringsSep "\n" (flatten (map regexpChecks toCheck))}
+        # removes forward source and append stdout source for dry-run
+        ${pkgs.coreutils}/bin/head -n -9 $n > conf
+        ${pkgs.coreutils}/bin/cat <<-EOF >> conf
+        <match log.**>
+          @type stdout
+        </match>
+        EOF
+        ${cwPkgs.fluentdCw}/bin/fluentd --dry-run --without-source --config conf
+      '';
+    };
 
   addFluentdService = services:
     let
