@@ -145,7 +145,7 @@ in rec {
           ttl_short = 1;
         }
         // cassandraConfig
-        // logConfig services.api;
+        // logConfig services.discovery;
 
         DNS-SERVER = {
           policy = "fixed";
