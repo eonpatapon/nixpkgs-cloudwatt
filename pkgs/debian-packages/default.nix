@@ -1,12 +1,17 @@
 { pkgs, contrailPkgs, lib, skydive }:
 
-let debianPackageVersion = "3.2-7";
+let debianPackageVersion = "3.2-9";
+    config = import ./config.nix {inherit pkgs;};
     vrouterUbuntu = module: lib.mkDebianPackage rec {
       name = "${module.name}.deb";
       version = debianPackageVersion;
       repository = "contrail";
       contents = [ module ];
       description = module.meta.description;
+      maintainerScripts = [
+        ((config module.KERNEL_VERSION).vrouterModulePostinst)
+        ((config module.KERNEL_VERSION).vrouterModulePostrm)
+      ];
       script = ''
         vrouterRelativePath=$(find ${pkgs.lib.concatStrings contents} -name vrouter.ko -printf '%P')
         vrouterRelativeDir=$(dirname $vrouterRelativePath)
