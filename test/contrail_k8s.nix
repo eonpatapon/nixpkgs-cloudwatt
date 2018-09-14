@@ -225,10 +225,10 @@ let
     $vrouter2->start();
 
     # check all vrouters are present and functionnal
-    $controller->waitUntilSucceeds("curl -s opencontrail-analytics.service:8081/analytics/uves/vrouter/*?cfilt=NodeStatus:process_status | jq -e '.[][].value.NodeStatus.process_status[] | select(.state == \"Functional\")' | jq -s '. | length' | grep -q 2");
+    $controller->waitUntilSucceeds("curl -s opencontrail-analytics.service:8081/analytics/uves/vrouter/*?cfilt=NodeStatus:process_status | jq '.value | map(select(.value.NodeStatus.process_status[0].state == \"Functional\")) | length' | grep -q 2");
+    $controller->waitUntilSucceeds("curl -s opencontrail-analytics.service:8081/analytics/uves/vrouter/*?cfilt=VrouterAgent:mode | jq '.value | length' | grep -q 2");
 
     # force svc restart to schedule the SI on vrouters
-    $controller->sleep(10);
     $controller->succeed("kubectl delete pod \$(kubectl get pod -l service=svc-monitor -o jsonpath='{.items[0].metadata.name}')");
 
     $vrouter1->succeed("netns-daemon-start -U opencontrail -P development -s opencontrail-api.service -n default-domain:service:vn1 vm1");
