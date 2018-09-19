@@ -1,6 +1,6 @@
 { pkgs, contrailPkgs, lib, skydive }:
 
-let debianPackageVersion = "3.2-9";
+let debianPackageVersion = "3.2-10";
     config = import ./config.nix {inherit pkgs;};
     vrouterUbuntu = module: lib.mkDebianPackage rec {
       name = "${module.name}.deb";
@@ -20,6 +20,12 @@ let debianPackageVersion = "3.2-9";
         vrouterPath=$(find ${pkgs.lib.concatStrings contents} -name vrouter.ko)
         ln -s $vrouterPath $vrouterRelativeDir
       '';
+      extraControl = ''
+        Provides: contrail-vrouter
+        Replaces: contrail-vrouter-${module.KERNEL_VERSION}
+        Conflicts: contrail-vrouter-${module.KERNEL_VERSION}
+      '';
+
     };
 in
 {
@@ -57,7 +63,14 @@ in
       mkdir -p etc/init
       cp ${./contrail/contrail-vrouter-agent.upstart} etc/init/contrail-vrouter-agent.conf
     '';
-    };
+    extraControl = ''
+      Provides: contrail-vrouter-agent
+      Replaces: contrail-vrouter-agent, contrail-vrouter-utils,
+        python-opencontrail-vrouter-netns, python-contrail-vrouter-api, contrail-lib
+      Conflicts: contrail-vrouter-agent, contrail-vrouter-utils,
+        python-opencontrail-vrouter-netns, python-contrail-vrouter-api, contrail-lib
+    '';
+  };
 
   skydive = lib.mkDebianPackage rec {
     name = "skydive";

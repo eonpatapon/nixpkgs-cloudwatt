@@ -1,14 +1,14 @@
 { pkgs, ... }:
 
 let
-  control = name: version: description:
-    pkgs.writeText "control-${name}" ''
+  control = name: version: description: extraControl:
+    pkgs.writeText "control-${name}" (''
       Package: ${name}
       Architecture: all
       Description: ${description}
       Maintainer: nobody
       Version: ${version}
-    '';
+    '' + extraControl);
 
 in
 rec {
@@ -28,6 +28,7 @@ rec {
   # A list of derivations that are copiyed to the DEBIAN
   # directory. This can be used to add postinst scripts for instance.
   , maintainerScripts ? []
+  , extraControl ? ""
   }:
     pkgs.runCommand "${name}-${version}.deb" {
     exportReferencesGraph =
@@ -52,7 +53,7 @@ rec {
       pushd $BUILD_DIR
 
       mkdir DEBIAN
-      cp ${control name version description} DEBIAN/control
+      cp ${control name version description extraControl} DEBIAN/control
 
     '' + pkgs.lib.concatMapStringsSep "\n" (x: "cp ${x} DEBIAN/${x.name}") maintainerScripts
     + ''
