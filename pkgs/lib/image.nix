@@ -88,6 +88,25 @@ rec {
       args // { command = "runenv ${environmentFile} ${command}"; }
     else args;
 
+  genPerpRcLog = { name, logger, ... }: pkgs.writeTextFile {
+    name = "${name}-rc.log";
+    destination = "/etc/perp/${name}/rc.log";
+    executable = true;
+    text = ''
+      #!${pkgs.bash}/bin/bash
+
+      exec 2>&1
+
+      TARGET=$1
+
+      start() {
+        ${logger}
+      }
+
+      eval $TARGET "$@"
+    '';
+  };
+
   genPerpRcMain = {
     name,
     command,
@@ -193,7 +212,9 @@ rec {
         config = {
           Cmd = [ "/usr/sbin/perpd" ];
         };
-        contents = map genPerpRcMain newArgs.services ++ contents;
+        contents = map genPerpRcMain newArgs.services
+          ++ map genPerpRcLog (builtins.filter (s: s ? "logger") newArgs.services)
+          ++ contents;
         extraCommands = ''
           ${pkgs.findutils}/bin/find etc/perp -type d -exec chmod +t {} \;
         '' + extraCommands;
