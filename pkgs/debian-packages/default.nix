@@ -1,6 +1,6 @@
 { pkgs, contrailPkgs, lib, skydive }:
 
-let debianPackageVersion = "3.2-10";
+let debianPackageVersion = "3.2-11";
     config = import ./config.nix {inherit pkgs;};
     vrouterUbuntu = module: lib.mkDebianPackage rec {
       name = "${module.name}.deb";
@@ -62,6 +62,7 @@ in
       rm files
       mkdir -p etc/init
       cp ${./contrail/contrail-vrouter-agent.upstart} etc/init/contrail-vrouter-agent.conf
+      mkdir -p var/log/contrail
     '';
     extraControl = ''
       Provides: contrail-vrouter-agent
