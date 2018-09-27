@@ -2,7 +2,7 @@
 
 version: {
   vrouterModulePostinst = pkgs.writeScript
-    "contrail-vrouter-module.postinst"
+    "postinst"
     ''
       #!/bin/sh
 
@@ -15,7 +15,7 @@ version: {
       fi
     '';
   vrouterModulePostrm = pkgs.writeScript
-    "contrail-vrouter-module.postrm"
+    "postrm"
     ''
       #!/bin/sh
 

@@ -1,6 +1,6 @@
 { pkgs, contrailPkgs, lib, skydive }:
 
-let debianPackageVersion = "3.2-11";
+let debianPackageVersion = "3.2-12";
     config = import ./config.nix {inherit pkgs;};
     vrouterUbuntu = module: lib.mkDebianPackage rec {
       name = "${module.name}.deb";
