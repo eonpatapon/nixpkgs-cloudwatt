@@ -21,12 +21,14 @@ in {
     '';
   };
 
-  # Render the consul template file and check it is a valid YAML file
-  writeConsulTemplateYamlFile =
+  # Render the consul template file
+  writeConsulTemplateFile =
     { name, text
     # An attribute set to mock Consul data. See
     # https://github.com/nlewo/consul-template-mock for details
-    , consulTemplateMocked } :
+    , consulTemplateMocked
+    # Check if the rendered file is a valid yaml file
+    , yaml ? false } :
     let
       mock = pkgs.writeText "mock-${name}.json" (builtins.toJSON consulTemplateMocked);
     in
@@ -34,8 +36,8 @@ in {
         inherit name text;
         checkPhase = ''
           ${cwPkgs.consulTemplateMock}/bin/consul-template-mock $n ${mock} > text.rendered
-          ${pkgs.python36Packages.yamllint}/bin/yamllint text.rendered
-        '';
+          ''
+          + pkgs.lib.optionalString yaml "${pkgs.python36Packages.yamllint}/bin/yamllint text.rendered";
       };
 
   # Returns the contents of a file base64 encoded

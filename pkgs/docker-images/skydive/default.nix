@@ -1,7 +1,7 @@
 { lib, skydive }:
 
 let
-  config = lib.writeConsulTemplateYamlFile {
+  config = lib.writeConsulTemplateFile {
     name = "skydive.yml.ctmpl";
     text = ''
       ---
@@ -58,6 +58,7 @@ let
           {{- end }}
     '';
     consulTemplateMocked = { service = { "skydive-analyzer-pods" = [ { "Address" = "localhost"; }];};};
+    yaml = true;
   };
 
 in
