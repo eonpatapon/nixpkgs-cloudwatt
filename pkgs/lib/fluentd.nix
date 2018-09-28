@@ -81,11 +81,6 @@ rec {
   genFluentdConf = services: pkgs.writeTextFile {
     name = "fluentd.conf";
     text = ''
-      # used to check that fluentd is initialized
-      <source>
-        @type forward
-        port 24225
-      </source>
       ${pkgs.lib.concatStrings (map genFluentdSource services)}
       ${pkgs.lib.concatStrings (map genFluentdFilters services)}
       <filter>
@@ -104,33 +99,20 @@ rec {
 
   addFluentdService = services:
     let
-      newServiceCommand = s:
-        if captureServiceStdout s then
-          "rundeux ${pkgs.bash}/bin/bash -c 'exec 2>&1 ${s.command}' :: ${pkgs.coreutils}/bin/tee /tmp/${s.name}"
-        else
-          s.command;
       newService = s:
-        if enableFluentdForService s then
+        if enableFluentdForService s && captureServiceStdout s then
           s // {
-            preStartScript = ''
-              ${pkgs.lib.optionalString (s ? preStartScript) s.preStartScript}
-              ${cwPkgs.waitFor}/bin/wait-for 127.0.0.1:24225 -t 30 -q
+            logger = ''
+              [ ! -p /tmp/${s.name} ] && mkfifo /tmp/${s.name}
+              ${pkgs.coreutils}/bin/tee /tmp/${s.name}
             '';
-            command = newServiceCommand s;
           }
         else
           s;
       newServices = map newService services;
-      fluentdPreStart = pkgs.lib.concatStrings (map ({ name, fluentd ? {}, ... }@service:
-        if captureServiceStdout service then
-          "[ ! -p /tmp/${name} ] && mkfifo /tmp/${name}\n"
-        else
-          ""
-      ) services);
     in
       newServices ++ [{
         name = "fluentd";
-        preStartScript = fluentdPreStart;
         command = "${cwPkgs.fluentdCw}/bin/fluentd --no-supervisor -c ${genFluentdConf services}";
       }];
 

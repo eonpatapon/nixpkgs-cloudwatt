@@ -28,6 +28,14 @@ let
     done
   '';
 
+  stderrSvc = pkgs.writeShellScriptBin "stderr-svc" ''
+    while true
+    do
+      >&2 echo "stderr-svc"
+      sleep 1
+    done
+  '';
+
   syslogSvc = pkgs.writeShellScriptBin "syslog-svc" ''
     while true
     do
@@ -42,6 +50,15 @@ let
       {
         name = "stdout-svc";
         command = "${stdoutSvc}/bin/stdout-svc";
+        fluentd = {
+          source = {
+            type = "stdout";
+          };
+        };
+      }
+      {
+        name = "stderr-svc";
+        command = "${stderrSvc}/bin/stderr-svc";
         fluentd = {
           source = {
             type = "stdout";
@@ -76,7 +93,8 @@ let
     config = rec {
       services.openssh.enable = true;
       services.openssh.permitRootLogin = "yes";
-      users.extraUsers.root.password = "root";
+      services.openssh.extraConfig = "PermitEmptyPasswords yes";
+      users.extraUsers.root.password = "";
 
       virtualisation = { diskSize = 4960; memorySize = 1024; };
       virtualisation.docker.enable = true;
@@ -101,6 +119,7 @@ let
     # fluentd has flush_interval set to 60s by default
     $machine->sleep(60);
     $machine->waitUntilSucceeds("journalctl --unit fluentd --no-pager | grep stdout-svc");
+    $machine->waitUntilSucceeds("journalctl --unit fluentd --no-pager | grep stderr-svc");
     $machine->waitUntilSucceeds("journalctl --unit fluentd --no-pager | grep syslog-svc");
   '';
 in
