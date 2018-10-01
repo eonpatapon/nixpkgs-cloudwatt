@@ -86,7 +86,7 @@ rec {
       <filter>
         @type generic_metadata
       </filter>
-      <match log.**>
+      <match openstack.message log.**>
         @type forward
         time_as_integer true
         <server>
