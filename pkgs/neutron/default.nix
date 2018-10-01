@@ -15,9 +15,9 @@ in python27Packages.buildPythonApplication {
 
   # prb needs a git repository to get the version
   src = fetchgit {
-    url = "https://github.com/openstack/neutron.git";
-    rev = "4d8685da8050df79d9193f91cab572cfc6d67a47";
-    sha256 = "17w7skxsjwr1186r5fshd4zq503w402vg27pglhg9y6n4rbs82y6";
+    url = "https://git.corp.cloudwatt.com/applications/neutron.git";
+    rev = "7b7c044a3b8f63f2a6a39ddc119dfae706d02ad4";
+    sha256 = "1334fkh6jbinry0qvmj1n7ydih17zaas3i7v4apgjb7vs104hhx6";
     leaveDotGit = true;
   };
 
