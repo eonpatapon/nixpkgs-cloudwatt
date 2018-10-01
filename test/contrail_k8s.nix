@@ -47,6 +47,7 @@ let
       ../modules/infra_k8s.nix
       (contrailPath + /modules/cassandra.nix)
       ../modules/contrail_k8s.nix
+      ../modules/neutron_k8s.nix
     ];
 
     config = {
@@ -124,6 +125,8 @@ let
           };
         };
       };
+
+      neutron.k8s.enable = true;
 
       virtualisation = {
         diskSize = 10000;
@@ -219,6 +222,9 @@ let
 
     # check vnc_openstack
     $controller->succeed("${checkVncOpenstack}/bin/check-vnc_openstack");
+
+    # check neutron container
+    $controller->succeed("source /etc/openstack/admin.openrc && openstack network list");
 
     # we start vrouters when disco and control are ready
     $vrouter1->start();
