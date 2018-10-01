@@ -1,7 +1,7 @@
 { lib, locksmith }:
 
 let
-  config = lib.writeConsulTemplateYamlFile {
+  config = lib.writeConsulTemplateFile {
     name = "config.yaml.ctmpl";
     text = ''
       ---
@@ -70,6 +70,7 @@ let
             ]
           }'';};
       };
+    yaml = true;
     };
 in
 
