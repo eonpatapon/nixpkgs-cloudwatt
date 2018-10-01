@@ -5,7 +5,7 @@
 auth_uri = {{ $catalog.identity.public_url }}
 identity_uri = {{ with $catalog.identity.admin_url }}{{ . | replaceAll "/v2.0" "" }}{{ end }}
 auth_host = {{ with $catalog.identity.admin_url }}{{ . | regexReplaceAll "http://([^:/]+).*" "$1" }}{{ end }}
-auth_port = 80
+auth_port = {{ if ($catalog.identity.admin_url | printf "%q") | regexMatch "(http:[^:]+:[0-9]+.*)" }}35357{{ else }}80{{ end }}
 auth_protocol = http
 admin_tenant_name = service
 admin_user = neutron

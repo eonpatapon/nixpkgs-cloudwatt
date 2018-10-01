@@ -2,7 +2,11 @@
 
 let
   neutronConf = import ./config/neutron.conf.ctmpl.nix { inherit writeText neutron; };
-
+  authtoken = lib.writeConsulTemplateFile {
+    name = "authtoken.conf.ctmpl";
+    text = (builtins.readFile ./config/authtoken.conf.ctmpl);
+    consulTemplateMocked = builtins.fromJSON (builtins.readFile ./config/mocked-authtoken.conf.ctmpl.json);
+  };
 in
 lib.buildImageWithPerp {
   name = "openstack/neutron";
@@ -24,7 +28,7 @@ lib.buildImageWithPerp {
   preStartScript = ''
     consul-template-wrapper -- -once \
       -template="${neutronConf}:/etc/neutron/neutron.conf" \
-      -template="${./config/authtoken.conf.ctmpl}:/etc/neutron/common.d/authtoken.conf" \
+      -template="${authtoken}:/etc/neutron/common.d/authtoken.conf" \
       -template="${./config/queue.conf.ctmpl}:/etc/neutron/common.d/queue.conf" \
       -template="${./config/contrailplugin.ini.ctmpl}:/etc/neutron/plugin.ini" \
       -template="/etc/consul-template/openstack/logging.conf.ctmpl:/etc/neutron/logging.conf"

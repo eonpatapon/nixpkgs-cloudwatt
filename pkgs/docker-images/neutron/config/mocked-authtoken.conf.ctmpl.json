@@ -1,0 +1,6 @@
+{
+    "env": { "openstack_region": "Region1" },
+    "key": { "/config/openstack/catalog/Region1/data":
+             "{\"identity\": {\"admin_url\": \"http://admin_url:35357/v2.0\", \"public_url\": \"http://public_url\" }}" },
+    "secret": { "secret/neutron": { "service_password": "my-secret" }}
+}
