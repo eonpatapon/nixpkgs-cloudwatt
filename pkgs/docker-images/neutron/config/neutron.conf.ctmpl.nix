@@ -20,22 +20,14 @@ writeText "neutron.conf.ctmpl.nix" ''
 
   api_extensions_path = ${neutron.apiExtensionPath}
 
-  core_plugin = {{ "neutron_plugin_contrail.plugins.opencontrail.contrail_plugin_v3.NeutronPluginContrailCoreV3" | or (index $neutron "core_plugin") }}
-  {{- if $neutron.service_plugins }}
-  service_plugins = {{ range $index, $data := $neutron.service_plugins -}}
-  {{- if $index }},{{ end }}{{ $data }}
-  {{- end }}
-  {{- end }}
-  {{- if $neutron.service_providers }}
+  core_plugin = neutron_plugin_contrail.plugins.opencontrail.contrail_plugin.NeutronPluginContrailCoreV2
+  service_plugins = neutron_plugin_contrail.plugins.opencontrail.loadbalancer.plugin.LoadBalancerPlugin,neutron_plugin_contrail.plugins.opencontrail.loadbalancer.v2.plugin.LoadBalancerPluginV2
 
   [service_providers]
-  {{- range $neutron.service_providers }}
-  service_provider = {{ . }}
-  {{- end }}
-  {{- end }}
+  service_provider = LOADBALANCER:Haproxy:neutron_plugin_contrail.plugins.opencontrail.loadbalancer.driver.OpencontrailLoadbalancerDriver:default
 
   [oslo_policy]
-  policy_file = policy.{{ "cloudwatt" | or (index $neutron "policy_type") }}.json
+  policy_file = policy.cloudwatt.json
 
   [nova]
   region_name = {{ $openstack_region }}
@@ -49,7 +41,7 @@ writeText "neutron.conf.ctmpl.nix" ''
   {{- end }}
 
   [quotas]
-  quota_driver = {{ "neutron_plugin_contrail.plugins.opencontrail.quota.driver.QuotaDriver" | or (index $neutron "quota_driver") }}
+  quota_driver = neutron_plugin_contrail.plugins.opencontrail.quota.driver.QuotaDriver
   quota_rbac_policy = 0
 
   [agent]
