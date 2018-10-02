@@ -10,7 +10,7 @@ let
 in
 lib.buildImageWithPerp {
   name = "openstack/neutron";
-  fromImage = dockerImages.pulled.openstackBaseImage;
+  fromImage = dockerImages.pulled.kubernetesBaseImage;
   command = "${neutron}/bin/neutron-server --config-dir /etc/neutron/common.d --config-file /etc/neutron/neutron.conf --config-file /etc/neutron/plugin.ini";
   contents = [
     (runCommand "static-files" {} ''
