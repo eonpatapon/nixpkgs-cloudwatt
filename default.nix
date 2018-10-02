@@ -33,6 +33,8 @@ let pkgs = import nixpkgs {};
         nixpkgsPath = nixpkgs;
       };
 
+      cwK8sHealthmonitor = callPackages ./pkgs/cw-k8s-healthmonitor { };
+
       debianPackages = callPackages ./pkgs/debian-packages {
         contrailPkgs = contrail32Cw;
         skydive = skydive.override (_: { enableStatic = true;});
