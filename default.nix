@@ -42,6 +42,8 @@ let pkgs = import nixpkgs {};
 
       tools = callPackages ./pkgs/tools { };
 
+      neutron = callPackage ./pkgs/neutron { };
+
       locksmith = callPackage ./pkgs/vault-fernet-locksmith { };
 
       kube2consul = callPackage ./pkgs/kube2consul { };

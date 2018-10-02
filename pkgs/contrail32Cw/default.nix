@@ -24,6 +24,7 @@ in
             # webCore
             test
             vms lib
+            pythonPackages
             tools;
 
   vrouter_ubuntu_3_13_0_83_generic = contrailPkgsCw.lib.buildVrouter ubuntuKernelHeaders_3_13_0_83_generic;

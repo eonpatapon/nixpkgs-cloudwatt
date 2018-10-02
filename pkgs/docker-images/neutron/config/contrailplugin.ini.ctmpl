@@ -1,0 +1,10 @@
+{{ $neutron := keyOrDefault "/config/neutron/data" "{}" | parseJSON -}}
+[APISERVER]
+api_server_ip = {{ $neutron.opencontrail.api_url }}
+contrail_extensions = ''
+multi_tenancy = True
+apply_subnet_host_routes = True
+
+[COLLECTOR]
+analytics_api_ip = {{ $neutron.opencontrail.analytics_api_url }}
+analytics_api_port = 8081

@@ -8,6 +8,12 @@
     sha256 = "0rj1417nn7lmlj9m1l4dsicqrz5y1az7j5v911wfrl590ym57xrb";
   };
 
+  openstackBaseImage = dockerTools.pullImage {
+    imageName = "docker-registry.sec.cloudwatt.com/openstack/base";
+    imageTag = "16.04-latest";
+    sha256 = "1xldf9g0g68962jn52c5ihk5vww92yd38vw6rd7fh5g7xvw231zx";
+  };
+
   keystoneAllImage = dockerTools.pullImage {
     imageName = "r.cwpriv.net/keystone/all";
     imageTag = "9.0.0-61516ea9ed2202a1";

@@ -42,7 +42,7 @@ in {
       };
 
       projects = mkOption {
-        type = types.attrsOf types.attrs;
+        type = types.attrsOf (types.attrsOf types.attrs);
         default = {};
       };
 

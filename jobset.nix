@@ -53,6 +53,8 @@ let
     # FIXME: because of callPackages theses attributes are added to the set
     "dockerImages.pulled.override"
     "dockerImages.pulled.overrideDerivation"
+    # All nixpkgs python packages are exposed :/
+    "contrail32Cw.pythonPackages"
   ];
 
 in

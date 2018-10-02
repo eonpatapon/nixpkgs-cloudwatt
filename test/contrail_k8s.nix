@@ -14,39 +14,13 @@ let
   publicNetPrefix = "10.0.0.0";
   publicNetPrefixLen = 24;
 
-  # we don't care about setting a correct tenant_id or user_id
-  # because is_admin is set to true
-  vncOpenstackRequest = pkgs.writeTextFile {
-    name = "request.json";
-    text = builtins.toJSON {
-      context = {
-        type = "network";
-        operation = "READALL";
-        tenant_id = "6d5e09f8e1194f928afece567b6e56f5";
-        user_id = "6d5e09f8e1194f928afece567b6e56f5";
-        request_id = "req-f79fa546-ec4c-4bcc-9f4d-b535974312b8";
-        is_admin = true;
-      };
-      data = {
-        fields = [];
-        filters = {};
-      };
-    };
-  };
-
-  checkVncOpenstack = pkgs.writeShellScriptBin "check-vnc_openstack" ''
-    source /etc/openstack/admin.openrc
-    export TOKEN=$(openstack token issue -f value -c id)
-    curl -i -X POST -H "X-Auth-Token: $TOKEN" -H "Content-type: application/json" \
-      --data @${vncOpenstackRequest} http://opencontrail-api.service:8082/neutron/network | grep -q '200 OK'
-  '';
-
   controller = { config, ... }: {
 
     imports = [
       ../modules/infra_k8s.nix
       (contrailPath + /modules/cassandra.nix)
       ../modules/contrail_k8s.nix
+      ../modules/neutron_k8s.nix
     ];
 
     config = {
@@ -124,6 +98,8 @@ let
           };
         };
       };
+
+      neutron.k8s.enable = true;
 
       virtualisation = {
         diskSize = 10000;
@@ -217,8 +193,8 @@ let
       $controller->waitUntilSucceeds(sprintf("curl -s opencontrail-discovery.service:5998/services.json | jq -e '.services[] | select(.service_type == \"%s\" and .oper_state == \"up\")'", $service));
     }
 
-    # check vnc_openstack
-    $controller->succeed("${checkVncOpenstack}/bin/check-vnc_openstack");
+    # check neutron container
+    $controller->succeed("source /etc/openstack/admin.openrc && openstack network list");
 
     # we start vrouters when disco and control are ready
     $vrouter1->start();
