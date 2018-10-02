@@ -26,7 +26,7 @@ module Cloudwatt
 
         record["message"].strip!
 
-        ::Fluent::Engine.emit "openstack.message", time, record
+        router.emit "openstack.message", time, record
       end
 
       chain.next
