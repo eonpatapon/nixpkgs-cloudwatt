@@ -78,11 +78,26 @@ rec {
     else
       "";
 
+  genFluentdMatches = { name, fluentd ? {}, ... }:
+    let
+      genFluentdMatch = name: match:
+        ''
+          <match log.${name}.**>
+            ${attrsToFluentd match}
+          </match>
+        '';
+    in
+    if fluentd ? matches then
+      pkgs.lib.concatStrings (map (genFluentdMatch name) fluentd.matches)
+    else
+      "";
+
   genFluentdConf = services: pkgs.writeTextFile {
     name = "fluentd.conf";
     text = ''
       ${pkgs.lib.concatStrings (map genFluentdSource services)}
       ${pkgs.lib.concatStrings (map genFluentdFilters services)}
+      ${pkgs.lib.concatStrings (map genFluentdMatches services)}
       <filter>
         @type generic_metadata
       </filter>
