@@ -1,8 +1,0 @@
-[DEFAULT]
-rabbit_hosts = neutron-queue.service
-rabbit_userid = neutron
-{{ with secret "secret/neutron" -}}
-rabbit_password = {{ .Data.queue_password }}
-{{- end }}
-rabbit_virtual_host = openstack
-rabbit_ha_queues = True

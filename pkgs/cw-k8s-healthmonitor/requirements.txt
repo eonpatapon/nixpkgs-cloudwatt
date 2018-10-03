@@ -1,0 +1,10 @@
+python-keystoneclient
+keystoneauth
+pymysql
+kombu
+paste
+futures
+prometheus-client
+six
+keystoneauth1
+requests
