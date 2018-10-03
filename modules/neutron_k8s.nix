@@ -21,6 +21,7 @@ let
       image = with (cwPkgs.dockerImages.neutron); "${imageName}:${imageTag}";
       livenessProbe = cwLibs.mkHTTPGetProbe "/" 1988 10 30 15;
       readinessProbe = cwLibs.mkHTTPGetProbe "/ready" 1988 10 30 15;
+      lifecycle = { preStop = { exec = { command = ["/usr/sbin/stop-container"]; };};};
     } ];
   };
 

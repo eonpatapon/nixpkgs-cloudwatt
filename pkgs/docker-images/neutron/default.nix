@@ -1,4 +1,4 @@
-{ lib, writeText, runCommand, neutron, dockerImages, cwK8sHealthmonitor }:
+{ lib, writeText, stdenv, fetchgit, runCommand, neutron, dockerImages, cwK8sHealthmonitor }:
 
 let
   neutronConf = import ./config/neutron.conf.ctmpl.nix { inherit writeText neutron; };
@@ -14,6 +14,21 @@ let
         neutron-api:
           - ['keystone', null, [ready]]
           - ['http:self', {url: 'http://127.1:9696'}, ['shutdown']]
+    '';
+  };
+
+  # We don't want to fetch it from git.corp.cloudwatt.net because this
+  # cannot be pulled from the sec environment.
+  stopContainer = stdenv.mkDerivation {
+    name = "stop-container";
+    src = fetchgit {
+      url = "https://git.sec.cloudwatt.com/docker/openstack-base.git";
+      rev = "d92921237f057d802c85e7194bed629a0b5855bd";
+      sha256 = "0n3yvlmjj4wg59g4mb7i4gs3b47z18s196cm7av0dd1nv4gfnw3p";
+    };
+    dontBuild = true;
+    installPhase = ''
+      install -D resources/usr/lib/openstack-containers/resources/etc/stop-container.d/cw-k8s-healthmonitor $out/usr/sbin/stop-container
     '';
   };
 
@@ -33,6 +48,7 @@ lib.buildImageWithPerps {
     '')
     # This is to install neutron config files to /etc/
     neutron
+    stopContainer
   ];
   services = [
     {
