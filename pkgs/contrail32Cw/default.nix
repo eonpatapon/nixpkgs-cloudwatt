@@ -33,4 +33,5 @@ in
   vrouter_ubuntu_3_13_0_125_generic = contrailPkgsCw.lib.buildVrouter ubuntuKernelHeaders_3_13_0_125_generic;
   vrouter_ubuntu_3_13_0_141_generic = contrailPkgsCw.lib.buildVrouter ubuntuKernelHeaders_3_13_0_141_generic;
   vrouter_ubuntu_3_13_0_143_generic = contrailPkgsCw.lib.buildVrouter ubuntuKernelHeaders_3_13_0_143_generic;
+  vrouter_ubuntu_4_4_0_137_generic = contrailPkgsCw.lib.buildVrouter ubuntuKernelHeaders_4_4_0_137_generic;
   }
