@@ -8,8 +8,9 @@ with import (pkgs.path + /nixos/lib/testing.nix) { system = builtins.currentSyst
 let
   postgres = pkgs.dockerTools.pullImage {
     imageName = "postgres";
-    imageTag = "9.3";
-    sha256 = "0nk1zij7hk84sniv0ql86j86m8sh0kxcm652jxkd3wakl7w1ywal";
+    imageDigest = "sha256:d2376b546ea9de4657a6b73b4fd9911451c0fac23318103b472e5b72240b3401";
+    finalImageTag = "9.3";
+    sha256 = "0r5yj7y7nisrvzf61zicvj5457bzqb98ydbcl6wra93i1pdgys06";
   };
 
   runStack = lib.runDockerComposeStack {

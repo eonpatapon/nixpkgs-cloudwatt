@@ -4,11 +4,6 @@ with lib;
 
 let hydra = pkgs.hydra.overrideAttrs(old: {
       patches = [
-        # This patch is for the github PR plugin and could be removed on 18.09
-        (fetchpatch {
-          url = https://github.com/NixOS/hydra/commit/028ecf7c1facc0e8a060c75f3b3abbc390529171.patch;
-          sha256 = "13aqsnswfv900r9zfnhy9y466b5h118pi2d2snf4zkjqvm4aj31y";
-        })
         # Add GitlabPulls plugin
         (fetchpatch {
           url = https://github.com/nlewo/hydra/commit/f90cdcb2e5dde7716d9ed83653644e4f8b2e5849.patch;

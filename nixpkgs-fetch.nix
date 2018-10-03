@@ -5,13 +5,13 @@ in {
   pkgs = bootstrap_pkgs.fetchFromGitHub {
     owner = "NixOS";
     repo = "nixpkgs";
-    # Belong to the branch release-18.03
-    rev = "6796f5db1c2a25aeade10d613ddb403e4eb7a928";
-    sha256 = "0fmvh1wcr1rgsr6cv8bpw5rmm9ypg94q7h9s4xqzaq567d3nhhhz";};
+    # Belong to the branch release-18.09
+    rev = "f12ea6195e4819586ee174d4ef9113b2c1007045";
+    sha256 = "07fj3bdq38fcab7acfv0ynxc849g98fd0a671apmjzfbqjg7bm68";};
   contrail = bootstrap_pkgs.fetchFromGitHub {
     owner = "nlewo";
     repo = "nixpkgs-contrail";
     # Belong to the master branch
-    rev = "bde3124fc934d72b095870c099021451eb33f250";
-    sha256 = "1nvdrc3r0qfwfhdl5x10has9kiy462f1bf9ga0k8iccsm40shyw6";};
+    rev = "fde2d065b42ea4bbb81f1e8030d5d42a57e3e600";
+    sha256 = "1j7izgpw3ag67bgy36s2a4cxlzapw9gy4713gcfh0jwwzkkixzr1";};
   }

@@ -204,6 +204,7 @@ rec {
     in
       pkgs.dockerTools.buildImage {
         inherit name runAsRoot;
+        tag = "latest";
         fromImage =
           if newArgs ? fromImage then
             newArgs.fromImage
