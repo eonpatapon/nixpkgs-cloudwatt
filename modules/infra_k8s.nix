@@ -253,7 +253,7 @@ in {
         serviceAccountKeyFile = "${certs.master}/kube-service-accounts.pem";
         # enable PodPreset api
         runtimeConfig = "authentication.k8s.io/v1beta1=true,settings.k8s.io/v1alpha1=true";
-        admissionControl = [ "NamespaceLifecycle" "LimitRanger" "ServiceAccount" "ResourceQuota" "DefaultStorageClass" "DefaultTolerationSeconds" "NodeRestriction" "PodPreset" ];
+        enableAdmissionPlugins = [ "NamespaceLifecycle" "LimitRanger" "ServiceAccount" "ResourceQuota" "DefaultStorageClass" "DefaultTolerationSeconds" "NodeRestriction" "PodPreset" ];
       };
       kubeconfig = {
         server = "https://api.${cfg.domain}";
@@ -355,11 +355,6 @@ in {
         VAULT_WRAP_TTL = "5m";
         VAULT_ADDR = "http://vault.localdomain:8200";
       };
-      serviceConfig = {
-        # https://github.com/NixOS/nixpkgs/issues/44263
-        CPUAccounting = true;
-        MemoryAccounting = true;
-      };
     };
 
     systemd.services.vault = {
@@ -375,6 +370,9 @@ in {
         # wait for complete unseal
         sleep 5
         export VAULT_ADDR=http://vault.localdomain:8200
+        # set secrets kv store to v1
+        vault secrets disable secret
+        vault secrets enable -version=1 -path=secret kv
         ${createVaultPolicies (recursiveUpdate defaultVaultPolicies cfg.vaultPolicies)}
         ${writeVaultPaths "auth/token/roles/" (defaultVaultRoles // cfg.vaultRoles)}
         ${writeVaultPaths "" (defaultVaultData // cfg.vaultData)}
