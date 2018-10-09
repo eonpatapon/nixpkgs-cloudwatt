@@ -1,9 +1,9 @@
-{ pkgs, contrailPath, nixpkgsPath, ubuntuKernelHeaders }:
+{ pkgs, contrailPath, ubuntuKernelHeaders }:
 
 with ubuntuKernelHeaders;
 
 let
-  contrailAllPackages = import (contrailPath + "/all-packages.nix") { inherit pkgs; nixpkgs=nixpkgsPath; };
+  contrailAllPackages = import (contrailPath + "/all-packages.nix") { inherit pkgs; nixpkgs = pkgs.path; };
 
   # Override sources attribute to use the Cloudwatt repositories instead of Contrail repositories
   overrideContrailPkgs = self: super: {

@@ -1,4 +1,4 @@
-{ config, lib, pkgs, cwPkgs, cwLibs, ... }:
+{ config, pkgs, lib, ... }:
 
 with builtins;
 with lib;
@@ -58,7 +58,7 @@ let
     kubelets = [ config.networking.hostName ];
   };
 
-  infraConfig = import ./config/infra_k8s.nix { inherit pkgs cwPkgs cwLibs config certs; };
+  infraConfig = import ./config/infra_k8s.nix { inherit pkgs lib config certs; };
   infraLib = import ./lib/infra_k8s.nix { inherit pkgs; };
 
 in {
@@ -268,7 +268,7 @@ in {
         };
         networkPlugin = "cni";
         cni = {
-          packages = [ cwPkgs.cni_0_3_0 cwPkgs.calicoCniPlugin ];
+          packages = with pkgs; [ cni_0_3_0 calicoCniPlugin ];
           config = [
             {
               name = "calico-k8s-network";
@@ -318,7 +318,7 @@ in {
           ];
         };
         extraOpts = "--resolv-conf=/etc/kubernetes/kubelet/resolv.conf --volume-plugin-dir=/etc/kubernetes/volumeplugins";
-        seedDockerImages = with cwPkgs.dockerImages; [
+        seedDockerImages = with pkgs.dockerImages; [
           kube2consulWorker
           pulled.calicoNodeImage
           calicoKubeControllers
@@ -361,7 +361,7 @@ in {
       wantedBy = [ "multi-user.target" ];
       after = [ "network-online.target" ];
       # vault needs glibc for getent binary
-      path = with pkgs; [ vault glibc cwPkgs.waitFor ];
+      path = with pkgs; [ vault glibc waitFor ];
       script = ''
         vault server -dev -dev-listen-address=169.254.1.13:8200 -dev-root-token-id=${vaultRootToken}
       '';
@@ -384,13 +384,13 @@ in {
     systemd.services.fluentd = {
       wantedBy = [ "multi-user.target" ];
       after = [ "network.target" ];
-      script = "${cwPkgs.fluentdCw}/bin/fluentd --no-supervisor -q -c ${infraConfig.fluentdConf}";
+      script = "${pkgs.fluentdCw}/bin/fluentd --no-supervisor -q -c ${infraConfig.fluentdConf}";
     };
 
     systemd.services.consul = {
       wantedBy = [ "multi-user.target" ];
       after = [ "network-online.target" ];
-      path = with pkgs; [ consul cwPkgs.waitFor curl ];
+      path = with pkgs; [ consul waitFor curl ];
       script = ''
         consul agent -dev -log-level info -client 169.254.1.11 -domain ${cfg.domain} -config-dir /etc/consul.d
       '';
@@ -408,7 +408,7 @@ in {
       serviceConfig.RemainAfterExit = true;
       wantedBy = [ "kubernetes.target" ];
       after = [ "vault.service" "consul.service" "kube-apiserver.service" "kubelet-bootstrap.service" ];
-      path = with pkgs; [ kubectl docker cwPkgs.waitFor ];
+      path = with pkgs; [ kubectl docker waitFor ];
       script = ''
         wait-for localhost:8080 -q -t 300
         # give cluster-admin role to all accounts
@@ -462,7 +462,7 @@ in {
       # vaulttmpfs plugin must be placed in a special directory tree so that the kubelet can
       # find it. This directory is passed to the kubelet with the --volume-plugin-dir flag.
       "kubernetes/volumeplugins/cloudwatt~vaulttmpfs/vaulttmpfs".source =
-        "${cwPkgs.vaulttmpfs}/bin/kubernetes-flexvolume-vault-plugin";
+        "${pkgs.vaulttmpfs}/bin/kubernetes-flexvolume-vault-plugin";
     }
     # add host services in consul
     // (mapAttrs' (name: { address, port }:

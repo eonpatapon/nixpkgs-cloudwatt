@@ -1,4 +1,4 @@
-{ pkgs, lib, cwPkgs }:
+{ pkgs, lib }:
 
 rec {
   # We use environment variables REGISTRY_URL, REGISTRY_USERNAME,
@@ -172,7 +172,7 @@ rec {
   # Build an image where 'command' is started by Perp
   buildImageWithPerp = {
     name,
-    fromImage ? cwPkgs.dockerImages.pulled.kubernetesBaseImage,
+    fromImage ? pkgs.dockerImages.pulled.kubernetesBaseImage,
     command,
     preStartScript ? "",
     contents ? [],
@@ -193,7 +193,7 @@ rec {
 
   buildImageWithPerps = args@{
     name,
-    fromImage ? cwPkgs.dockerImages.pulled.kubernetesBaseImage,
+    fromImage ? pkgs.dockerImages.pulled.kubernetesBaseImage,
     services,
     contents ? [],
     extraCommands ? "",
@@ -209,7 +209,7 @@ rec {
           if newArgs ? fromImage then
             newArgs.fromImage
           else
-            cwPkgs.dockerImages.pulled.kubernetesBaseImage;
+            pkgs.dockerImages.pulled.kubernetesBaseImage;
         config = {
           Cmd = [ "/usr/sbin/perpd" ];
         };

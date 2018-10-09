@@ -1,5 +1,4 @@
 { pkgs
-, cwPkgs
 , lib
 , stdenv
 }:
@@ -15,7 +14,7 @@ let
     ];
 
     config = {
-      _module.args = { inherit cwPkgs; cwLibs = lib; };
+      _module.args = { inherit pkgs lib; };
 
       services.openssh.enable = true;
       services.openssh.permitRootLogin = "yes";

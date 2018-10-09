@@ -17,32 +17,29 @@
 }:
 
 let
-  pkgs = import nixpkgs {};
-  cwPkgs = import ./default.nix { inherit contrail nixpkgs; };
-  lib = import ./pkgs/lib { inherit pkgs cwPkgs; };
+  pkgs = import nixpkgs { overlays = [ cloudwatt ]; };
+  cloudwatt = import ./cloudwatt-overlay.nix { inherit contrail; };
   getCommitId = pkgs.runCommand "nixpkgs-cloudwatt-commit-id" { buildInputs = [ pkgs.git ]; } ''
     git -C ${cloudwatt} rev-parse HEAD > $out
   '';
   commitId = builtins.replaceStrings ["\n"] [""] (builtins.readFile getCommitId);
   genDockerPushJobs = drvs:
-    pkgs.lib.mapAttrs' (n: v: pkgs.lib.nameValuePair (n) (lib.dockerPushImage v commitId unsetProxyForSkopeo)) drvs;
+    pkgs.lib.mapAttrs' (n: v: pkgs.lib.nameValuePair (n) (pkgs.lib.dockerPushImage v commitId unsetProxyForSkopeo)) drvs;
   genDebPublishJobs = drvs:
-    pkgs.lib.mapAttrs' (n: v: pkgs.lib.nameValuePair (n) (lib.publishDebianPkg aptlyUrl v unsetProxyForAptly)) drvs;
-
-  contrail32Cw = cwPkgs.contrail32Cw;
+    pkgs.lib.mapAttrs' (n: v: pkgs.lib.nameValuePair (n) (pkgs.lib.publishDebianPkg aptlyUrl v unsetProxyForAptly)) drvs;
 
   jobs = {
-    inherit (cwPkgs) debianPackages dockerImages test;
-    inherit contrail32Cw;
+    inherit (pkgs) debianPackages dockerImages contrail32Cw test;
   }
   // pkgs.lib.optionalAttrs pushToDockerRegistry {
     pushDockerImages = genDockerPushJobs (
       # exclude sub attrs like dockerImages.pulled
-      pkgs.lib.filterAttrs (n: v: pkgs.lib.isDerivation v) cwPkgs.dockerImages
+      pkgs.lib.filterAttrs (n: v: pkgs.lib.isDerivation v) pkgs.dockerImages
     );
   }
   // pkgs.lib.optionalAttrs publishToAptly {
-    publishDebianPackages = genDebPublishJobs cwPkgs.debianPackages; };
+    publishDebianPackages = genDebPublishJobs pkgs.debianPackages;
+  };
 
   excludedJobs = builtins.map (pkgs.lib.splitString ".") [
     # These are not derivations

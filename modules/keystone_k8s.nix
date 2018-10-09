@@ -1,4 +1,4 @@
-{ config, lib, pkgs, cwPkgs, cwLibs, ... }:
+{ config, pkgs, lib, ... }:
 
 with builtins;
 with lib;
@@ -8,7 +8,7 @@ let
   cfg = config.keystone.k8s;
 
   keystoneLib = import ./lib/keystone_k8s.nix { inherit pkgs; };
-  keystoneConfig = import ./config/keystone_k8s.nix { inherit pkgs cwPkgs cwLibs config; };
+  keystoneConfig = import ./config/keystone_k8s.nix { inherit pkgs config; };
 
   defaultProjects = {
     openstack = {
@@ -83,7 +83,7 @@ in {
     };
 
     environment.systemPackages = with pkgs; [
-      cwPkgs.openstackClient
+      openstackClient
     ];
 
     systemd.services.keystone = {
@@ -91,7 +91,7 @@ in {
       serviceConfig.RemainAfterExit = true;
       wantedBy = [ "kubernetes.target" ];
       after = [ "kube-bootstrap.service" "mysql-bootstrap.service" ];
-      path = [ pkgs.kubectl pkgs.docker cwPkgs.waitFor cwPkgs.openstackClient ];
+      path = with pkgs; [ kubectl docker waitFor openstackClient ];
       script = ''
         kubectl apply -f /etc/kubernetes/keystone/
       '';
@@ -108,7 +108,7 @@ in {
 
       enable = true;
 
-      seedDockerImages = [ cwPkgs.dockerImages.pulled.keystoneAllImage ];
+      seedDockerImages = [ pkgs.dockerImages.pulled.keystoneAllImage ];
 
       consulData = with keystoneConfig; {
         "config/openstack/catalog/${region}/data" = defaultCatalog // cfg.catalog;

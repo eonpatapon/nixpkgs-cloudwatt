@@ -1,8 +1,10 @@
-{ pkgs, cwPkgs, cwLibs }:
+{ pkgs }:
+
+with pkgs.lib;
 
 rec {
 
-  images = cwPkgs.dockerImages;
+  images = pkgs.dockerImages;
 
   application = "opencontrail";
   vaultPolicy = "opencontrail";
@@ -10,24 +12,24 @@ rec {
   controlIP = "10.44.44.50";
   controlHostname = "control";
 
-  contrailService = service: cwLibs.mkJSONService {
+  contrailService = service: mkJSONService {
     inherit application service;
   };
 
-  apiDeployment = cwLibs.mkJSONDeployment {
+  apiDeployment = mkJSONDeployment {
     inherit application vaultPolicy;
     service = "api";
     port = 8082;
     containers = [
       {
         image = "${images.contrailApi.imageName}:${images.contrailApi.imageTag}";
-        livenessProbe = cwLibs.mkHTTPGetProbe "/" 8082 15 30 15;
-        readinessProbe = cwLibs.mkHTTPGetProbe "/" 8082 15 30 15;
+        livenessProbe = mkHTTPGetProbe "/" 8082 15 30 15;
+        readinessProbe = mkHTTPGetProbe "/" 8082 15 30 15;
       }
     ];
   };
 
-  schemaTransformerDeployment = cwLibs.mkJSONDeployment {
+  schemaTransformerDeployment = mkJSONDeployment {
     inherit application vaultPolicy;
     service = "schema-transformer";
     port = 8087;
@@ -38,7 +40,7 @@ rec {
     ];
   };
 
-  svcMonitorDeployment = cwLibs.mkJSONDeployment {
+  svcMonitorDeployment = mkJSONDeployment {
     inherit application vaultPolicy;
     service = "svc-monitor";
     port = 8089;
@@ -49,33 +51,33 @@ rec {
     ];
   };
 
-  analyticsDeployment = cwLibs.mkJSONDeployment {
+  analyticsDeployment = mkJSONDeployment {
     inherit application vaultPolicy;
     service = "analytics";
     port = 8081;
     containers = [
       {
         image = "${images.contrailAnalytics.imageName}:${images.contrailAnalytics.imageTag}";
-        livenessProbe = cwLibs.mkHTTPGetProbe "/" 8081 30 30 15;
-        readinessProbe = cwLibs.mkHTTPGetProbe "/" 8081 30 30 15;
+        livenessProbe = mkHTTPGetProbe "/" 8081 30 30 15;
+        readinessProbe = mkHTTPGetProbe "/" 8081 30 30 15;
       }
     ];
   };
 
-  discoveryDeployment = cwLibs.mkJSONDeployment {
+  discoveryDeployment = mkJSONDeployment {
     inherit application vaultPolicy;
     service = "discovery";
     port = 5998;
     containers = [
       {
         image = "${images.contrailDiscovery.imageName}:${images.contrailDiscovery.imageTag}";
-        livenessProbe = cwLibs.mkHTTPGetProbe "/" 5998 30 30 15;
-        readinessProbe = cwLibs.mkHTTPGetProbe "/" 5998 30 30 15;
+        livenessProbe = mkHTTPGetProbe "/" 5998 30 30 15;
+        readinessProbe = mkHTTPGetProbe "/" 5998 30 30 15;
       }
     ];
   };
 
-  controlDeployment = cwLibs.mkJSONDeployment' {
+  controlDeployment = mkJSONDeployment' {
     inherit application vaultPolicy;
     service = "control";
     port = 5269;

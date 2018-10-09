@@ -1,4 +1,4 @@
-{ pkgs, cwPkgs, cwLibs, config }:
+{ pkgs, config }:
 
 with builtins;
 with pkgs.lib;
@@ -39,11 +39,11 @@ rec {
     '';
   };
 
-  keystoneDeployment = service: port: cwLibs.mkJSONDeployment {
+  keystoneDeployment = service: port: mkJSONDeployment {
     inherit service port;
     application = "keystone";
     vaultPolicy = "keystone";
-    containers = with cwPkgs.dockerImages.pulled; with cwLibs.image; [
+    containers = with pkgs.dockerImages.pulled; with image; [
       {
         image = "${imageName keystoneAllImage}:${imageTag keystoneAllImage}";
         lifecycle = {
@@ -51,8 +51,8 @@ rec {
             exec = { command = ["/usr/sbin/stop-container"]; };
           };
         };
-        livenessProbe = cwLibs.mkHTTPGetProbe "/" 1988 10 30 15;
-        readinessProbe = cwLibs.mkHTTPGetProbe "/ready" 1988 10 30 15;
+        livenessProbe = mkHTTPGetProbe "/" 1988 10 30 15;
+        readinessProbe = mkHTTPGetProbe "/ready" 1988 10 30 15;
         volumeMounts = [
           { name = "vault-token-keystone-keys"; mountPath = "/run/vault-token-keystone-keys"; }
         ];
@@ -74,7 +74,7 @@ rec {
     ];
   };
 
-  keystoneService = service: cwLibs.mkJSONService {
+  keystoneService = service: mkJSONService {
     inherit service;
     application = "keystone";
   };

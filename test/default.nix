@@ -1,4 +1,4 @@
-{ callPackage, cwPkgs, contrailPath, contrailPkgs }:
+{ callPackage, contrailPath, contrailPkgs }:
 
 {
   hydra = callPackage ./hydra.nix { };
@@ -15,20 +15,14 @@
     inherit contrailPath contrailPkgs;
   };
 
-  infraK8S = callPackage ./infra_k8s.nix {
-    inherit cwPkgs;
-  };
+  infraK8S = callPackage ./infra_k8s.nix { };
 
-  rabbitmqK8S = callPackage ./rabbitmq_k8s.nix {
-    inherit cwPkgs;
-  };
+  rabbitmqK8S = callPackage ./rabbitmq_k8s.nix { };
 
-  keystoneK8S = callPackage ./keystone_k8s.nix {
-    inherit cwPkgs;
-  };
+  keystoneK8S = callPackage ./keystone_k8s.nix { };
 
   contrailK8S = callPackage ./contrail_k8s.nix {
-    inherit contrailPath cwPkgs contrailPkgs;
+    inherit contrailPath contrailPkgs;
   };
 
   # to run these tests:

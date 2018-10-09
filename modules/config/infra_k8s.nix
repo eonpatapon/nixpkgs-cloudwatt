@@ -1,4 +1,4 @@
-{ pkgs, cwPkgs, cwLibs, config, certs }:
+{ pkgs, lib, config, certs }:
 
 with builtins;
 with pkgs.lib;
@@ -21,7 +21,7 @@ rec {
     '';
   };
 
-  kubeConfigMap = cwLibs.writeYamlFile {
+  kubeConfigMap = writeYamlFile {
     name = "configmap.yml";
     text = ''
       ---
@@ -66,7 +66,7 @@ rec {
         spec = {
           dnsPolicy = "Default";
           securityContext = { fsGroup = 65534; };
-          containers = with cwPkgs.dockerImages; [
+          containers = with pkgs.dockerImages; [
             {
               name = "kube2consul-worker";
               image = "${kube2consulWorker.imageName}:${kube2consulWorker.imageTag}";
@@ -77,7 +77,7 @@ rec {
                 { name = "K2C_CONSUL_API"; value = "consul.localdomain:8500"; }
                 { name = "K2C_LOGTOSTDERR"; value = "true"; }
               ];
-              livenessProbe = cwLibs.mkHTTPGetProbe "/health" 8080 10 30 15;
+              livenessProbe = mkHTTPGetProbe "/health" 8080 10 30 15;
               volumeMounts = [
                 { mountPath = "/run/vault-token"; name = "vault-token"; }
                 { mountPath = "/run/consul-template-wrapper"; name = "config"; }
@@ -158,7 +158,7 @@ rec {
           # Minimize downtime during a rolling upgrade or deletion; tell Kubernetes to do a "force;
           # deletion" = https://kubernetes.io/docs/concepts/workloads/pods/pod/#termination-of-pods.;
           terminationGracePeriodSeconds = 0;
-          containers = with cwPkgs.dockerImages.pulled; with cwLibs.image; [
+          containers = with pkgs.dockerImages.pulled; with image; [
             # Runs calico/node container on each Kubernetes node.  This;
             # container programs network policy and routes on each;
             # host.;
@@ -305,7 +305,7 @@ rec {
           ];
           serviceAccountName = "calico-kube-controllers";
           securityContext = { fsGroup = 65534; };
-          containers = with cwPkgs.dockerImages; [
+          containers = with pkgs.dockerImages; [
             {
               name = "calico-kube-controllers";
               image = "${calicoKubeControllers.imageName}:${calicoKubeControllers.imageTag}";
