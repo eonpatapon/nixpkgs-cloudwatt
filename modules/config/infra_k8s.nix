@@ -114,25 +114,6 @@ rec {
     };
   };
 
-  calicoSecrets = toJSON {
-    apiVersion = "v1";
-    kind = "Secret";
-    type = "Opaque";
-    metadata = {
-      name = "calico-etcd-secrets";
-      namespace = "kube-system";
-    };
-    data = {
-      # Populate the following files with etcd TLS configuration if desired, but leave blank if
-      # not using TLS for etcd.
-      # This self-hosted install expects three files with the following names.  The values
-      # should be base64 encoded strings of the entire contents of each file.
-      etcd-ca = cwLibs.base64File "${certs.master}/ca.pem";
-      etcd-cert = cwLibs.base64File "${certs.master}/etcd.pem";
-      etcd-key = cwLibs.base64File "${certs.master}/etcd-key.pem";
-    };
-  };
-
   calicoNodeDaemonSet = toJSON {
     apiVersion = "extensions/v1beta1";
     kind = "DaemonSet";
