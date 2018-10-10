@@ -108,8 +108,6 @@ let
 
     imports = [
       ../modules/infra_k8s.nix
-      ../modules/rabbitmq_k8s.nix
-      ../modules/keystone_k8s.nix
     ];
 
     config = {
@@ -151,11 +149,6 @@ let
         };
       };
 
-      rabbitmq.k8s = {
-        enable = true;
-        vhosts = [ "foo" ];
-      };
-
       virtualisation = {
         diskSize = 10000;
         memorySize = 4096;
@@ -183,14 +176,10 @@ let
   testScript = ''
     $master->waitForUnit("docker.service");
     $master->waitForUnit("kube-bootstrap.service");
-    $master->waitForUnit("rabbitmq-bootstrap.service");
     $master->waitForUnit("vault.service");
     $master->waitForUnit("consul.service");
     # check external service provisionning
     $master->succeed("grep -q foo /etc/hosts");
-    # check rabbitmq provisionning
-    $master->succeed("su -s ${stdenv.shell} rabbitmq -c 'rabbitmqctl list_users' | grep -q foo");
-    $master->succeed("curl -s consul:8500/v1/catalog/services | grep -q foo-queue");
     # check consul provisionning
     $master->succeed("curl -s http://consul:8500/v1/kv/service2 | jq -r '.[].Value' | base64 -d | jq -e '.data == \"foo\"'");
     # check k8s deployment

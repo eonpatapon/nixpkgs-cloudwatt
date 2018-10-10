@@ -19,6 +19,10 @@
     inherit cwPkgs;
   };
 
+  rabbitmqK8S = callPackage ./rabbitmq_k8s.nix {
+    inherit cwPkgs;
+  };
+
   keystoneK8S = callPackage ./keystone_k8s.nix {
     inherit cwPkgs;
   };
