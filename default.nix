@@ -62,6 +62,8 @@ let pkgs = import nixpkgs {};
 
       ubuntuKernelHeaders = callPackages ./pkgs/ubuntu-kernel-headers { };
 
+      prometheusMemcachedExporter = callPackages ./pkgs/prometheus-memcached-exporter { };
+
     };
 
 in cwPkgs
