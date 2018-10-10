@@ -72,6 +72,6 @@ lib.buildImageWithPerps {
    }
    {
      name = "cw-k8s-healthmonitor";
-     command = "${cwK8sHealthmonitor}/bin/cw-k8s-healthmonitor --health-monitor-config-file ${healthMonitorOverrides} --graphite-bridge-host graphite-relay.localdomain";
+     command = "${cwK8sHealthmonitor}/bin/cw-k8s-healthmonitor --health-monitor-config-file ${healthMonitorOverrides} --graphite-bridge-host graphite-relay.localdomain --component neutron-api";
    }];
 }
