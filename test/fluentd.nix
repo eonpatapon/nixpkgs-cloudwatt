@@ -116,8 +116,8 @@ let
     $machine->waitForUnit("docker.service");
     $machine->waitForUnit("fluentd.service");
     $machine->succeed("${runStack}");
-    # fluentd has flush_interval set to 60s by default
-    $machine->sleep(60);
+    # fluentd has flush_interval set to 10s
+    $machine->sleep(10);
     $machine->waitUntilSucceeds("journalctl --unit fluentd --no-pager | grep stdout-svc");
     $machine->waitUntilSucceeds("journalctl --unit fluentd --no-pager | grep stderr-svc");
     $machine->waitUntilSucceeds("journalctl --unit fluentd --no-pager | grep syslog-svc");

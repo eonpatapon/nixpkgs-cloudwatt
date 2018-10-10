@@ -124,6 +124,7 @@ rec {
         <match log.**>
           @type forward
           time_as_integer true
+          flush_interval 10s
           <server>
             name local
             host fluentd.localdomain
