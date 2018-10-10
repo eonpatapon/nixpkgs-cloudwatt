@@ -22,7 +22,7 @@ let
 
     inherit (tools) runUbuntuVmScript;
 
-    inherit (trivialBuilders) writeConsulTemplateFile writeYamlFile base64File;
+    inherit (trivialBuilders) writeConsulTemplateFile writeYamlFile;
 
     inherit (k8s) mkJSONDeployment mkJSONDeployment' mkJSONService mkHTTPGetProbe;
   };

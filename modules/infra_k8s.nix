@@ -418,6 +418,10 @@ in {
           --user=kubelet \
           --group=system:serviceaccounts
         kubectl apply -f /etc/kubernetes/openstack
+        kubectl create -n kube-system secret generic calico-etcd-secrets \
+          --from-file=etcd-ca=${certs.master}/ca.pem \
+          --from-file=etcd-cert=${certs.master}/etcd.pem \
+          --from-file=etcd-key=${certs.master}/etcd-key.pem
         kubectl apply -f /etc/kubernetes/infra/stage1
         while [ $(kubectl --namespace kube-system get pods --field-selector=status.phase=Running 2>/dev/null | wc -l) -ne 3 ]
         do
@@ -446,7 +450,6 @@ in {
       "kubernetes/infra/stage1/pod-preset.json".text = kubePodPreset;
       # calico config to be applied in the cluster
       "kubernetes/infra/stage1/calico-config-map.json".text = calicoConfigMap;
-      "kubernetes/infra/stage1/calico-secrets.json".text = calicoSecrets;
       "kubernetes/infra/stage1/calico-node.serviceaccount.json".text = calicoNodeServiceAccount;
       "kubernetes/infra/stage1/calico-kube-controllers.serviceaccount.json".text =
         calicoKubeControllersServiceAccount;

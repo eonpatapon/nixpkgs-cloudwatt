@@ -40,8 +40,4 @@ in {
           + pkgs.lib.optionalString yaml "${pkgs.python36Packages.yamllint}/bin/yamllint text.rendered";
       };
 
-  # Returns the contents of a file base64 encoded
-  base64File = path: readFile (pkgs.runCommand "base64" {} ''
-    cat ${path} | ${pkgs.coreutils}/bin/base64 -w0 > $out
-  '');
 }
