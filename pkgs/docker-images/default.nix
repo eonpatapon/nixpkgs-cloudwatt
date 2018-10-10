@@ -16,6 +16,8 @@ callPackages ./contrail { inherit contrailPath; } //
 
   neutron = callPackage ./neutron { };
 
+  prometheusMemcachedExporter = callPackage ./prometheus-memcached-exporter { };
+
   skydiveAnalyzer = callPackage ./skydive { };
 
   pulled = callPackages ./pulled.nix { };
