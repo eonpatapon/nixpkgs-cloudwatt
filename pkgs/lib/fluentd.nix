@@ -151,7 +151,7 @@ rec {
           s // {
             logger = ''
               [ ! -p /tmp/${s.name} ] && mkfifo /tmp/${s.name}
-              ${pkgs.coreutils}/bin/tee /tmp/${s.name}
+              exec ${pkgs.coreutils}/bin/tee /tmp/${s.name}
             '';
           }
         else
