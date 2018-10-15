@@ -1,4 +1,4 @@
-{ pkgs, cwPkgs, ... }:
+{ pkgs, lib }:
 
 with builtins;
 with pkgs.lib;
@@ -110,7 +110,7 @@ rec {
       toCheck = collect (hasAttr "checks") services;
       regexpChecks = { regexp, checks }: map (regexpCheck regexp) checks;
       regexpCheck = regexp: check: ''
-        ${cwPkgs.fluentdRegexpTester}/bin/fluentd-regexp-tester test '${regexp}' '${check}' >/dev/null
+        ${pkgs.fluentdRegexpTester}/bin/fluentd-regexp-tester test '${regexp}' '${check}' >/dev/null
       '';
     in pkgs.writeTextFile {
       name = "fluentd.conf";
@@ -140,7 +140,7 @@ rec {
           @type stdout
         </match>
         EOF
-        ${cwPkgs.fluentdCw}/bin/fluentd --dry-run --without-source --config conf
+        ${pkgs.fluentdCw}/bin/fluentd --dry-run --without-source --config conf
       '';
     };
 
@@ -160,7 +160,7 @@ rec {
     in
       newServices ++ [{
         name = "fluentd";
-        command = "${cwPkgs.fluentdCw}/bin/fluentd --no-supervisor -c ${genFluentdConf services}";
+        command = "${pkgs.fluentdCw}/bin/fluentd --no-supervisor -c ${genFluentdConf services}";
       }];
 
   # Insert fluentd in image
@@ -171,8 +171,8 @@ rec {
       layer = pkgs.dockerTools.buildImage {
         name = "fluentd";
         fromImage =
-          if imageDesc ? fromImage then imageDesc.fromImage else cwPkgs.dockerImages.pulled.kubernetesBaseImage;
-        contents = [ cwPkgs.fluentdCw ];
+          if imageDesc ? fromImage then imageDesc.fromImage else pkgs.dockerImages.pulled.kubernetesBaseImage;
+        contents = [ pkgs.fluentdCw ];
       };
     in
       if enableFluentd imageDesc.services then

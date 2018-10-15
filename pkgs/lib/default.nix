@@ -1,8 +1,8 @@
-{ pkgs, cwPkgs }:
+{ pkgs }:
 
 let
 
-  callLibs = file: import file { inherit lib pkgs cwPkgs; };
+  callLibs = file: import file { inherit pkgs lib; };
 
   lib = rec {
 

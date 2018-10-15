@@ -1,4 +1,4 @@
-{ config, lib, pkgs, cwPkgs, cwLibs, ... }:
+{ config, pkgs, lib, ... }:
 
 with builtins;
 with lib;
@@ -7,7 +7,7 @@ let
 
   cfg = config.contrail.k8s;
 
-  contrailConfig = import ./config/contrail_k8s.nix { inherit pkgs cwPkgs cwLibs; };
+  contrailConfig = import ./config/contrail_k8s.nix { inherit pkgs; };
 
   defaultProvision = with contrailConfig; {
     namespace = "contrail_api_cli.provision";
@@ -56,7 +56,7 @@ in {
 
     infra.k8s = {
       enable = true;
-      seedDockerImages = with cwPkgs.dockerImages; [
+      seedDockerImages = with pkgs.dockerImages; [
         contrailDiscovery
         contrailApi
         contrailSchemaTransformer
@@ -123,7 +123,7 @@ in {
     };
 
     environment.systemPackages = with pkgs; [
-      cwPkgs.contrail32Cw.tools.contrailApiCliWithExtra
+      contrail32Cw.tools.contrailApiCliWithExtra
     ];
 
     environment.variables = {
@@ -135,7 +135,7 @@ in {
       serviceConfig.RemainAfterExit = true;
       wantedBy = [ "kubernetes.target" ];
       after = [ "keystone.service" "cassandra.service" "rabbitmq-bootstrap.service" "zookeeper.service" ];
-      path = [ pkgs.kubectl cwPkgs.waitFor cwPkgs.contrail32Cw.tools.contrailApiCliWithExtra ];
+      path = with pkgs; [ kubectl waitFor contrail32Cw.tools.contrailApiCliWithExtra ];
       environment = {
         CONTRAIL_API_HOST = "opencontrail-api.service";
       };

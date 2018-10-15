@@ -1,4 +1,4 @@
-{ config, lib, pkgs, cwPkgs, cwLibs, ... }:
+{ config, pkgs, lib, ... }:
 
 with builtins;
 with lib;
@@ -7,20 +7,20 @@ let
 
   cfg = config.neutron.k8s;
 
-  neutronService = cwLibs.mkJSONService {
+  neutronService = pkgs.lib.mkJSONService {
     application = "neutron";
     service = "api";
   };
 
-  neutronDeployment = cwLibs.mkJSONDeployment {
+  neutronDeployment = pkgs.lib.mkJSONDeployment {
     application = "neutron";
     vaultPolicy = "neutron,nova";
     service = "api";
     port = 9696;
     containers = [ {
-      image = with (cwPkgs.dockerImages.neutron); "${imageName}:${imageTag}";
-      livenessProbe = cwLibs.mkHTTPGetProbe "/" 1988 10 30 15;
-      readinessProbe = cwLibs.mkHTTPGetProbe "/ready" 1988 10 30 15;
+      image = with (pkgs.dockerImages.neutron); "${imageName}:${imageTag}";
+      livenessProbe = pkgs.lib.mkHTTPGetProbe "/" 1988 10 30 15;
+      readinessProbe = pkgs.lib.mkHTTPGetProbe "/ready" 1988 10 30 15;
       lifecycle = { preStop = { exec = { command = ["/usr/sbin/stop-container"]; };};};
     } ];
   };
@@ -44,7 +44,7 @@ in {
 
     infra.k8s = {
       enable = true;
-      seedDockerImages = [ cwPkgs.dockerImages.neutron ];
+      seedDockerImages = [ pkgs.dockerImages.neutron ];
 
       vaultPolicies = {
         neutron = {

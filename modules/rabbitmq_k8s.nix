@@ -1,4 +1,4 @@
-{ config, lib, pkgs, cwPkgs, cwLibs, ... }:
+{ config, lib, pkgs, ... }:
 
 with builtins;
 with lib;

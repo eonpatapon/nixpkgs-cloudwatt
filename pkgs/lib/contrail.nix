@@ -1,4 +1,4 @@
-{ pkgs, cwPkgs, lib }:
+{ pkgs, lib }:
 
 rec {
   buildContrailImageWithPerp = { name, command, preStartScript, fluentd}:

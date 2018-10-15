@@ -1,11 +1,13 @@
 { pkgs, lib }:
 
+with pkgs.lib;
+
 let
 
   config = { headers ? "", conf }: ''
     {{ $opencontrail := keyOrDefault "/config/opencontrail/data" "{}" | parseJSON -}}
   '' + headers
-     + pkgs.lib.generators.toINI {} conf;
+     + generators.toINI {} conf;
 
   logConfig = service: {
     log_level = ''{{- if $opencontrail.${service.name}.log_level }}
@@ -358,7 +360,7 @@ in rec {
 
   vrouterAgent = pkgs.writeTextFile {
     name = "contrail-vrouter-agent.conf";
-    text = pkgs.lib.generators.toINI {} {
+    text = generators.toINI {} {
       DEFAULT = {
         disable_flow_collection = 1;
         log_file = "/var/log/contrail/vrouter.log";

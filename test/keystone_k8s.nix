@@ -1,8 +1,4 @@
-{ pkgs
-, cwPkgs
-, lib
-, stdenv
-}:
+{ pkgs, lib }:
 
 with import (pkgs.path + /nixos/lib/testing.nix) { system = builtins.currentSystem; };
 
@@ -15,7 +11,7 @@ let
     ];
 
     config = {
-      _module.args = { inherit cwPkgs; cwLibs = lib; };
+      _module.args = { inherit pkgs lib; };
 
       services.openssh.enable = true;
       services.openssh.permitRootLogin = "yes";

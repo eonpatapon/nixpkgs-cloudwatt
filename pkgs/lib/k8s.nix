@@ -1,4 +1,4 @@
-{ lib, pkgs, cwPkgs }:
+{ pkgs, lib }:
 
 with builtins;
 with pkgs.lib;

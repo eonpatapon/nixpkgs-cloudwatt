@@ -1,5 +1,4 @@
 { pkgs
-, cwPkgs
 , lib
 , stdenv
 }:
@@ -111,7 +110,7 @@ let
     ];
 
     config = {
-      _module.args = { inherit cwPkgs; cwLibs = lib; };
+      _module.args = { inherit pkgs lib; };
 
       services.openssh.enable = true;
       services.openssh.permitRootLogin = "yes";
@@ -160,7 +159,7 @@ let
       #   "-netdev user,id=user.0,hostfwd=tcp::2222-:22"
       # ];
 
-      environment.systemPackages = with pkgs; [ jq kubectl docker vault dnsutils cwPkgs.openstackClient ];
+      environment.systemPackages = with pkgs; [ jq kubectl docker vault dnsutils openstackClient ];
 
       environment.etc = {
         "kubernetes/test/service1.deployment.json".text = service1Deployment;

@@ -1,4 +1,4 @@
-{ pkgs, cwPkgs, lib }:
+{ pkgs, lib }:
 
 with builtins;
 with lib;
@@ -35,7 +35,7 @@ in {
       pkgs.writeTextFile {
         inherit name text;
         checkPhase = ''
-          ${cwPkgs.consulTemplateMock}/bin/consul-template-mock $n ${mock} > text.rendered
+          ${pkgs.consulTemplateMock}/bin/consul-template-mock $n ${mock} > text.rendered
           ''
           + pkgs.lib.optionalString yaml "${pkgs.python36Packages.yamllint}/bin/yamllint text.rendered";
       };
