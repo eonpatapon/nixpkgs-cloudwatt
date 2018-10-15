@@ -1,6 +1,6 @@
 { callPackage, pkgs, lib, contrail32Cw, contrailPath, waitFor, redis }:
 
-let config = import ./config.nix { inherit pkgs; };
+let config = import ./config.nix { inherit pkgs lib; };
 
 in {
   contrailVrouter = callPackage ./vrouter {
@@ -17,7 +17,7 @@ in {
         -template="${config.api}:/run/consul-template-wrapper/contrail/contrail-api.conf" \
         -template="${config.vncApiLib}:/run/consul-template-wrapper/contrail/vnc_api_lib.ini"
     '';
-    fluentd = config.fluentdForPythonService;
+    fluentd = config.fluentdForPythonService { servicePatterns = config.fluentdApiPatterns; };
   };
 
   contrailDiscovery = lib.buildContrailImageWithPerp {

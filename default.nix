@@ -19,6 +19,8 @@ let pkgs = import nixpkgs {};
 
       fluentdCw = callPackage ./pkgs/fluentdCw { };
 
+      fluentdRegexpTester = callPackage ./pkgs/fluentd-regexp-tester { };
+
       vaulttmpfs = callPackage ./pkgs/kubernetes-flexvolume-vault-plugin { };
 
       calicoCniPlugin = callPackage ./pkgs/calicoCniPlugin { };

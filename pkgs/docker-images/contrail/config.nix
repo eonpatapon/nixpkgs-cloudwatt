@@ -1,4 +1,4 @@
-{ pkgs }:
+{ pkgs, lib }:
 
 let
 
@@ -396,31 +396,117 @@ in rec {
     '';
   };
 
-  fluentdForPythonService = {
+  fluentdApiPatterns = [
+    {
+      format = "regexp";
+      expression = {
+        regexp = ''/^(?<time>([^ ]+ ){3})[^\:]+:\s+(SANDESH:\s+\[(?<sandesh>[^\]]*)\]\s?)?__default__\s+\[(?<level>[^ ]+)\]:\s+(?<type>VncApiStatsLog):\s+api_stats\s+=\s+<<\s+operation_type\s+=\s+(?<operation_type>\w+)\s+user\s+=\s+(?<user_name>[^ ]+)\s+useragent\s+=\s+(?<useragent>[^ ]+)\s+remote_ip\s+=\s+(?<remote_ip>[^ ]+)\s+domain_name\s+=\s+[^ ]+\s+project_name\s+=\s+(?<project_name>[^ ]+)\s+object_type\s+=\s+(?<object_type>[^ ]+)\s+response_time_in_usec\s+=\s+(?<response_time_in_usec>\d+)\s+response_size\s+=\s+(?<response_size>\d+)\s+resp_code\s+=\s+(?<response_code>\d+).*$/'';
+        checks = [
+          ''09/06/2018 10:25:12 AM [contrail-api]: __default__ [SYS_INFO]: VncApiStatsLog: api_stats = <<  operation_type = POST  user = neutron  useragent = python-requests/2.9.1  remote_ip = 10.35.8.159  domain_name = default-domain  project_name = service  object_type = logical_router  response_time_in_usec = 3852  response_size = 23  resp_code = 200  >>''
+        ];
+      };
+      time_format = ''%m/%d/%Y %I:%M:%S %p'';
+      types = "response_code:integer,response_size:integer,response_time_in_usec:integer";
+    }
+    {
+      format = "regexp";
+      expression = {
+        regexp = ''/^(?<time>([^ ]+ ){3})[^\:]+:\s+(SANDESH:\s+\[(?<sandesh>[^\]]*)\]\s?)?__default__\s+\[(?<level>[^ ]+)\]:\s+(?<type>VncApiConfigLog):\s+api_log\s+=\s+<<\s+(identifier_uuid\s+=\s+(?<object_uuid>[^ ]+)\s+)?object_type\s+=\s+(?<object_type>[^ ]+)(\s+identifier_name\s+=\s+(?<object_fq_name>[^ ]+))?\s+url\s+=\s+(?<url>[^ ]+)\s+operation\s+=\s+(?<operation_type>[^ ]+)(\s+useragent\s+=\s+(?<useragent>[^ ]+))?(\s+remote_ip\s+=\s+(?<remote_ip>[^ ]+))?(\s+body\s+=\s+(?<body>[^}]+}))?\s+domain\s+=\s+[^ ]+\s+project\s+=\s+(?<project_name>[^ ]+)(\s+user\s+=\s+(?<user_name>[^ ]+))?(\s+error\s+=\s+(?<error>[^>]+))?.*$/'';
+        checks = [
+          ''09/10/2018 02:29:52 PM [contrail-api]: __default__ [SYS_INFO]: VncApiConfigLog: api_log = <<  identifier_uuid = 60cb686b-cc94-470b-9a35-e2894229184c  object_type = virtual_machine_interface  url = http://127.0.0.1/virtual-machine-interface/60cb686b-cc94-470b-9a35-e2894229184c  operation = http_delete  domain = default-domain  project = service  error = virtual_machine_interface:Delete when resource still referred: ['http://127.0.0.1/loadbalancer/13a87cdf-932f-4ed1-abd9-c99427a95a96']  >>''
+          ''09/10/2018 02:30:07 PM [contrail-api]: __default__ [SYS_INFO]: VncApiConfigLog: api_log = <<  identifier_uuid = 462d1948-23d8-4132-bfbf-0b94ab892113  object_type = virtual_network  identifier_name = default-domain:rarora:nginx_vip_net_v2  url = http://127.0.0.1/virtual-network/462d1948-23d8-4132-bfbf-0b94ab892113  operation = delete  domain = default-domain  project = service  >>''
+          ''09/10/2018 02:31:35 PM [contrail-api]: __default__ [SYS_INFO]: VncApiConfigLog: api_log = <<  identifier_uuid = 53de7dd1-341b-4021-a48b-58876b56e9df  object_type = service_instance  identifier_name = default-domain:rarora:13a87cdf-932f-4ed1-abd9-c99427a95a96  url = http://contrail-api:8082/service-instance/53de7dd1-341b-4021-a48b-58876b56e9df  operation = delete  useragent = contrail-api-cli  remote_ip = contrail-api:8082  domain = default-domain  project = deployment  user = deployment  >>''
+          ''09/10/2018 02:41:36 PM [contrail-api]: __default__ [SYS_INFO]: VncApiConfigLog: api_log = <<  identifier_uuid = 69653ef0-487e-41df-a042-3be0b64c3f4b  object_type = instance_ip  identifier_name = 76d84111-d8c8-40fa-a3d4-fc0af4dc16c9  url = http://contrail-api:8082/ref-update  operation = ref-update  useragent = gremlin-fsck-pods-55b59cb648-wn24f:contrail-api-cli  remote_ip = contrail-api:8082  body = {"ref-type": "virtual-machine-interface", "attr": null, "ref-fq-name": ["default-domain", "rarora", "default-domain__rarora__d9ece944-f160-41ea-8b5e-daf6791be6d1__2__right__1"], "ref-uuid": "3a29e1ee-c1b3-4272-909b-fe86788c2bbe", "operation": "DELETE", "type": "instance-ip", "uuid": "69653ef0-487e-41df-a042-3be0b64c3f4b"}  domain = default-domain  project = deployment  user = deployment  >>''
+        ];
+      };
+      time_format = ''%m/%d/%Y %I:%M:%S %p'';
+    }
+    {
+      format = "regexp";
+      expression = {
+        regexp = ''/^(?<time>([^ ]+ ){3})[^\:]+:\s+(SANDESH:\s+\[(?<sandesh>[^\]]*)\]\s?)?__default__\s+\[(?<level>[^ ]+)\]:\s+(?<type>VncApiInfo):\s+neutron\s+request\s+\[(?<request_id>[^ ]+)\s+(?<project_id>[^ ]+)\s+(?<user_id>[^ ]+)\]\s+(?<object_op>[^ ]+)\s+(?<object_type>[^ ]+)\s+(?<operation_type>[^ ]+)\s+(?<path>[^ ]+)\s+(?<response_time>[^ ]+).*$/'';
+        checks = [
+          ''10/10/2018 08:37:41 AM [contrail-api]: __default__ [SYS_INFO]: VncApiInfo: neutron request [req-6200c8be-0177-43b7-b7f4-e34c60711bb0 0ed483e083ef4f7082501fcfa5d98c0e ce6000355ebe4250949c1531631e4544] READALL subnet GET /virtual-networks?count=False&shared=True&obj_uuids=a600d3b2-ba05-4ac0-abbe-1ef617d71f7c,daabd36f-e094-4d65-8906-5f654c8ee1ff,dc14d287-6172-4335-bc83-ec6098586075,ee231665-a5b5-4ec3-92d2-ce62b7491ccb&exclude_hrefs=True&detail=True 0.075468  ''
+          ''10/10/2018 08:42:40 AM [contrail-api]: __default__ [SYS_INFO]: VncApiInfo: neutron request [req-6823062f-4c34-4f3a-af6d-400044e583e2 13bbca5ac9fd4d368fca3ee92f920665 1692907117444e1c86316044a5bc7812] DELETE port DELETE /virtual-machine/b6b327a9-2802-4c9f-a4de-c1dfb03ffaba 0.014626  ''
+        ];
+      };
+      time_format = ''%m/%d/%Y %I:%M:%S %p'';
+      types = "response_time:float";
+    }
+  ];
+
+  fluentdForPythonService = { servicePatterns ? [] }: {
     source = {
       type = "stdout";
     };
     filters = [
+      # exclude http calls from haproxy checks
+      {
+        type = "grep";
+        exclude = [
+          {
+            key = "message";
+            pattern = {
+              regexp = ''^[^ ]*\s+-\s+-\s+\[[^\]]*\]\s+"(GET|HEAD)\s+\/\s+HTTP\/1\.(1|0)"\s+200.*$'';
+              checks = [
+                ''10.35.9.255 - - [2018-10-03 08:47:24] "GET / HTTP/1.1" 200 18151 0.002356''
+                ''10.35.8.179 - - [2018-10-03 08:47:56] "HEAD / HTTP/1.0" 200 130 0.003147''
+              ];
+            };
+          }
+        ];
+      }
+      # exclude sandesh messages
+      {
+        type = "grep";
+        exclude = [
+          {
+            key = "message";
+            pattern = {
+              regexp = ''Sandesh Send Level'';
+              checks = [
+                ''10/10/2018 08:27:41 AM [contrail-schema]: Sandesh Send Level [SYS_DEBUG] -> [INVALID]''
+              ];
+            };
+          }
+        ];
+      }
       {
         type = "parser";
         key_name = "message";
         parse = {
           type = "multi_format";
           pattern = [
+            # bottle logs
             {
               format = "regexp";
-              expression = ''/^(?<host>[^ ]*) [^ ]* (?<user>[^ ]*) \[(?<time>[^\]]*)\] "(?<method>\S+)(?: +(?<path>[^ ]*) +\S*)?" (?<code>[^ ]*) (?<size>[^ ]*) (?<response_time>\d+.\d+)(.*)?$/'';
+              expression = {
+                regexp = ''/^(?<remote_ip>[^ ]*)\s+-\s+-\s+\[(?<time>[^\]]*)\]\s+"(?<method>\S+)(?: +(?<path>[^ ]*) +\S*)?"\s+(?<response_code>[^ ]*)\s+(?<response_size>[^ ]*)\s+(?<response_time>\d+.\d+)(.*)?$/'';
+                checks = [
+                  ''10.35.9.255 - - [2018-09-06 10:25:11] "GET /loadbalancer-healthmonitors?count=False&parent_id=2e71b352-db81-4e47-b350-62ce6f75ee5e&detail=False HTTP/1.1" 200 143 0.007065''
+                  ''10.35.8.29 - - [2018-10-10 12:58:19] "POST /publish/opencontrail-api-6dcc7955fb-7n46z HTTP/1.1" 200 167 0.003453''
+                ];
+              };
               time_format = ''%Y-%m-%d %H:%M:%S'';
+              types = "response_code:integer,response_size:integer,response_time:float";
             }
+          ] ++ servicePatterns ++ [
+            # generic logs for all services
             {
               format = "regexp";
-              expression = ''/^(?<time>([^ ]+ ){3})[^\:]+: (?<message>.*)$/'';
+              expression = {
+                regexp = ''/^(?<time>([^ ]+ ){3})[^\:]+:\s+(SANDESH:\s+\[(?<sandesh>[^\]]*)\]\s?)?(__default__\s+)?(\[(?<level>[^ ]+)\]:\s+)?((?<type>[^:]+):\s+)?(?<message>.*)$/'';
+                checks = [
+                  ''09/10/2018 02:50:35 PM [contrail-api]: __default__ [SYS_WARN]: VncApiError: Unknown ID: d70b8b59-e019-4bba-8503-3629c7a78f7a (type: virtual_network)''
+                  ''09/10/2018 02:50:11 PM [contrail-api]: __default__ [SYS_NOTICE]: VncApiNotice: chown: 36368b32-c0ae-4be2-a8d3-b72a2039c8ab owner set to 2fd5a201-69cd-4772-b922-2f36c9d82107''
+                  ''10/10/2018 12:58:23 PM [contrail-discovery]: __default__ [SYS_INFO]: discServiceLog: <cl=opencontrail-analytics-6cc857cf4d-66kcf:contrail-analytics-api,st=Collector>  subs service=opencontrail-analytics-6cc857cf4d-66kcf, assign=0, count=2''
+                  ''10/10/2018 08:25:29 AM [contrail-schema]: Re-add uve <default-domain:tempest1:tempest-private-tempest-1234567,205191> in [ObjectVNTable:UveVirtualNetworkConfigTrace] map''
+                  ''10/10/2018 01:05:43 PM [contrail-schema]: Notification Message: {u'oper': u'UPDATE', u'type': u'virtual_router', u'uuid': u'e9d45db2-f8af-40c6-8bda-abb2739302c4'}''
+                ];
+              };
               time_format = ''%m/%d/%Y %I:%M:%S %p'';
             }
-            {
-              format = "regexp";
-              expression = ''/^(?<level>\w+):(?<message>.*)$/'';
-            }
+            # fallback
             {
               format = "none";
             }
