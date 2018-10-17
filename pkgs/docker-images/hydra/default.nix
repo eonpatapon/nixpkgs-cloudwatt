@@ -230,10 +230,6 @@ in
         # hydra-queue-runner fails to start without this
         "LOGNAME=none"
 
-        # To do https queries through http proxy
-        "PERL_NET_HTTPS_SSL_SOCKET_CLASS=Net::SSL"
-        "PERL_LWP_SSL_VERIFY_HOSTNAME=0"
-
         "HYDRA_DATA=/${hydraBaseDir}"
         "HYDRA_CONFIG=/${hydraBaseDir}/hydra.conf"
         "HYDRA_DBI=dbi:Pg:dbname=hydra;host=postgres;user=hydra;"
