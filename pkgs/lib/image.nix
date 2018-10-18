@@ -14,11 +14,12 @@ rec {
   # without the commit id is a stable identifier across both CIs.
   dockerPushImage = image: commitId: unsetProxy:
     let
-      imageRefWithCommitId = "${image.imageName}:${commitId}-${baseNameOf image.out}";
-      # Generate a ref such as imageName:outputPathHash
-      imageRef = image.imageName + ":" + pkgs.lib.removeSuffix ("-" + image.name) (baseNameOf image.out);
-      jobName = with pkgs.lib; "push-" + (removeSuffix ".tar" (removeSuffix ".gz" image.name));
-      outputString = "Pushed image ${image.imageName} with content ${baseNameOf image.out}  ";
+      hash = imageHash image;
+      # Generate a ref such as imageName:outputHash
+      imageRef = "${image.imageName}:${hash}";
+      imageRefWithCommitId = "${image.imageName}:${commitId}-${hash}";
+      jobName = "push-${hash}";
+      outputString = "Pushed image ${image.imageName} with hash ${hash}";
     in
       pkgs.runCommand jobName {
         buildInputs = with pkgs; [ jq skopeo ];
