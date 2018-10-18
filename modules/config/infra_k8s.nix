@@ -158,13 +158,13 @@ rec {
           # Minimize downtime during a rolling upgrade or deletion; tell Kubernetes to do a "force;
           # deletion" = https://kubernetes.io/docs/concepts/workloads/pods/pod/#termination-of-pods.;
           terminationGracePeriodSeconds = 0;
-          containers = with pkgs.dockerImages.pulled; with image; [
+          containers = with pkgs.dockerImages.pulled; [
             # Runs calico/node container on each Kubernetes node.  This;
             # container programs network policy and routes on each;
             # host.;
             {
               name = "calico-node";
-              image = "${imageName calicoNodeImage}:${imageTag calicoNodeImage}";
+              image = "${calicoNodeImage.imageName}:${calicoNodeImage.imageTag}";
               imagePullPolicy = "IfNotPresent";
               env = [
                 # The location of the Calico etcd cluster.;

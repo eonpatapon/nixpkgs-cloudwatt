@@ -258,18 +258,4 @@ rec {
     # with consul-template it is only possible to read a file
     [[ ! -f /my-ip ]] && hostname --ip-address > /my-ip
     '';
-
-  imageName = image: with pkgs.lib;
-    # for pullImage
-    if image ? imageId then
-      toString (head (splitString ":" image.imageId))
-    # for buildImage
-    else
-      image.imageName;
-
-  imageTag = image: with pkgs.lib;
-    if image ? imageId then
-      toString (tail (splitString ":" image.imageId))
-    else
-      image.imageTag;
 }
