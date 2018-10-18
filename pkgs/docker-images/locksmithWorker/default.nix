@@ -45,6 +45,7 @@ let
       lock-key: {{or (index $locksmith "lockKey") "locks/locksmith/.lock"}}
 
       {{- if index $locksmith "consul-address"}}
+
       consul-address: {{index $locksmith "consul-address"}}
       {{- end}}
 
@@ -76,7 +77,7 @@ in
 
 lib.buildImageWithPerp {
     name = "locksmith/worker";
-    command = "${locksmith}/bin/vault-fernet-locksmith -logtostderr -config-file-dir /run/consul-template-wrapper/etc/locksmith -config-file config";
+    command = "${locksmith}/bin/vault-fernet-locksmith -logtostderr -config /run/consul-template-wrapper/etc/locksmith/config.yaml";
     preStartScript = ''
       consul-template-wrapper -- -once \
         -template "${config}:/run/consul-template-wrapper/etc/locksmith/config.yaml"
