@@ -2,11 +2,12 @@
 , lib
 }:
 
-with import (pkgs.path + /nixos/lib/testing.nix) { system = builtins.currentSystem; };
+with builtins;
+with import (pkgs.path + /nixos/lib/testing.nix) { system = currentSystem; };
 
 let
 
-  tests = [
+  tests = map mkImage [
 
     # service should run as root
     rec {
@@ -291,32 +292,32 @@ let
         command = "${script}/bin/script";
       };
     in
-      lib.buildImageWithPerps {
-        name = test.name;
-        services = if test ? "service" then [ service ] else test.services;
+      test // {
+        image = lib.buildImageWithPerps {
+          name = test.name;
+          services = if test ? "service" then [ service ] else test.services;
+        };
       };
 
-  images = map mkImage tests;
-
-  loadImage = image: ''
-    $machine->succeed("docker load -i ${image}");
+  loadImage = test: ''
+    $machine->succeed("docker load -i ${test.image}");
   '';
 
-  loadImages = builtins.concatStringsSep "\n" (map loadImage images);
+  loadImages = concatStringsSep "\n" (map loadImage tests);
 
-  runImage = test: ''
-    $machine->succeed("docker run --rm -d --name ${test.name} -h ${test.name} ${test.name}");
+  runImage = test: with test; with lib.image; ''
+    $machine->succeed("docker run --rm -d --name ${name} -h ${name} ${image.imageName}:${imageHash image}");
   '';
 
-  runImages = builtins.concatStringsSep "\n" (map runImage tests);
+  runImages = concatStringsSep "\n" (map runImage tests);
 
   runTest = test@{ succeed ? [], fail ? [], testScript ? "", ... }:
     testScript +
-    (builtins.concatStringsSep "\n"
+    (concatStringsSep "\n"
       ((map (e: "$machine->succeed(\"docker exec ${test.name} ${e}\");") succeed) ++
        (map (e: "$machine->fail(\"docker exec ${test.name} ${e}\");") fail)));
 
-  runTests = builtins.concatStringsSep "\n" (map runTest tests);
+  runTests = concatStringsSep "\n" (map runTest tests);
 
   machine = { config, ... }: {
     config = rec {

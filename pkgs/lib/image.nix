@@ -1,5 +1,7 @@
 { pkgs, lib }:
 
+with builtins;
+
 rec {
   # We use environment variables REGISTRY_URL, REGISTRY_USERNAME,
   # REGISTRY_PASSWORD to specify the url and credentials of the
@@ -12,11 +14,11 @@ rec {
   # without the commit id is a stable identifier across both CIs.
   dockerPushImage = image: commitId: unsetProxy:
     let
-      imageRefWithCommitId = "${image.imageName}:${commitId}-${builtins.baseNameOf image.out}";
+      imageRefWithCommitId = "${image.imageName}:${commitId}-${baseNameOf image.out}";
       # Generate a ref such as imageName:outputPathHash
-      imageRef = image.imageName + ":" + pkgs.lib.removeSuffix ("-" + image.name) (builtins.baseNameOf image.out);
+      imageRef = image.imageName + ":" + pkgs.lib.removeSuffix ("-" + image.name) (baseNameOf image.out);
       jobName = with pkgs.lib; "push-" + (removeSuffix ".tar" (removeSuffix ".gz" image.name));
-      outputString = "Pushed image ${image.imageName} with content ${builtins.baseNameOf image.out}  ";
+      outputString = "Pushed image ${image.imageName} with content ${baseNameOf image.out}  ";
     in
       pkgs.runCommand jobName {
         buildInputs = with pkgs; [ jq skopeo ];
@@ -24,7 +26,7 @@ rec {
           [ "REGISTRY_URL" "REGISTRY_USERNAME" "REGISTRY_PASSWORD" ];
         outputHashMode = "flat";
         outputHashAlgo = "sha256";
-        outputHash = builtins.hashString "sha256" outputString;
+        outputHash = hashString "sha256" outputString;
       } ''
       DESTCREDS=""
       CREDS=""
@@ -186,7 +188,7 @@ rec {
       services = [
         {
           inherit preStartScript command user environmentFile fluentd;
-          name = builtins.replaceStrings ["/"] ["-"] name;
+          name = replaceStrings ["/"] ["-"] name;
         }
       ];
     };
@@ -204,7 +206,6 @@ rec {
     in
       pkgs.dockerTools.buildImage {
         inherit name runAsRoot;
-        tag = "latest";
         fromImage =
           if newArgs ? fromImage then
             newArgs.fromImage
@@ -214,7 +215,7 @@ rec {
           Cmd = [ "/usr/sbin/perpd" ];
         };
         contents = map genPerpRcMain newArgs.services
-          ++ map genPerpRcLog (builtins.filter (s: s ? "logger") newArgs.services)
+          ++ map genPerpRcLog (filter (s: s ? "logger") newArgs.services)
           ++ contents;
         extraCommands = ''
           ${pkgs.findutils}/bin/find etc/perp -type d -exec chmod +t {} \;
@@ -227,7 +228,7 @@ rec {
   # output path. For instance:
   #    ...
   #    container = {
-  #      image = builtins.baseNameOf myImage;
+  #      image = baseNameOf myImage;
   #    ...
   runDockerComposeStack = stack:
     let
@@ -258,4 +259,8 @@ rec {
     # with consul-template it is only possible to read a file
     [[ ! -f /my-ip ]] && hostname --ip-address > /my-ip
     '';
+
+  # Takes the image derivation and returns the hash
+  imageHash = image: head (split "-" (baseNameOf image));
+
 }

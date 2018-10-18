@@ -16,7 +16,8 @@ let
 
     inherit (contrail) buildContrailImageWithPerp buildContrailImageWithPerps;
 
-    inherit (image) buildImageWithPerp buildImageWithPerps runDockerComposeStack genPerpRcMain dockerPushImage myIp;
+    inherit (image) buildImageWithPerp buildImageWithPerps runDockerComposeStack
+      genPerpRcMain dockerPushImage myIp imageHash;
 
     inherit (debian) mkDebianPackage publishDebianPkg;
 

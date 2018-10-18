@@ -69,7 +69,7 @@ rec {
           containers = with pkgs.dockerImages; [
             {
               name = "kube2consul-worker";
-              image = "${kube2consulWorker.imageName}:${kube2consulWorker.imageTag}";
+              image = "${kube2consulWorker.imageName}:${imageHash kube2consulWorker}";
               imagePullPolicy = "IfNotPresent";
               env = [
                 { name = "KUBERNETES_SERVICE_HOST"; value = "api.${config.networking.domain}"; }
@@ -308,7 +308,7 @@ rec {
           containers = with pkgs.dockerImages; [
             {
               name = "calico-kube-controllers";
-              image = "${calicoKubeControllers.imageName}:${calicoKubeControllers.imageTag}";
+              image = "${calicoKubeControllers.imageName}:${imageHash calicoKubeControllers}";
               imagePullPolicy = "IfNotPresent";
               env = [
                 # The location of the Calico etcd cluster.;

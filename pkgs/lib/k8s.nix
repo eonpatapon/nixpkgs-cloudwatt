@@ -27,7 +27,6 @@ let
 
   containerTemplate = { application, service, port, vaultPolicy }: {
     name = "${application}-${service}";
-    imagePullPolicy = "IfNotPresent";
     env = envTemplate application service;
     volumeMounts = volumeMountsTemplate vaultPolicy;
   } // optionalAttrs (port != 0) {

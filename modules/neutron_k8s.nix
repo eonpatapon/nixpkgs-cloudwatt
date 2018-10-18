@@ -18,7 +18,7 @@ let
     service = "api";
     port = 9696;
     containers = [ {
-      image = with (pkgs.dockerImages.neutron); "${imageName}:${imageTag}";
+      image = with pkgs.dockerImages; "${neutron.imageName}:${pkgs.lib.imageHash neutron}";
       livenessProbe = pkgs.lib.mkHTTPGetProbe "/" 1988 10 30 15;
       readinessProbe = pkgs.lib.mkHTTPGetProbe "/ready" 1988 10 30 15;
       lifecycle = { preStop = { exec = { command = ["/usr/sbin/stop-container"]; };};};

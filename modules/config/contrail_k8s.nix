@@ -1,10 +1,9 @@
 { pkgs }:
 
 with pkgs.lib;
+with pkgs.dockerImages;
 
 rec {
-
-  images = pkgs.dockerImages;
 
   application = "opencontrail";
   vaultPolicy = "opencontrail";
@@ -22,7 +21,7 @@ rec {
     port = 8082;
     containers = [
       {
-        image = "${images.contrailApi.imageName}:${images.contrailApi.imageTag}";
+        image = "${contrailApi.imageName}:${imageHash contrailApi}";
         livenessProbe = mkHTTPGetProbe "/" 8082 15 30 15;
         readinessProbe = mkHTTPGetProbe "/" 8082 15 30 15;
       }
@@ -35,7 +34,7 @@ rec {
     port = 8087;
     containers = [
       {
-        image = "${images.contrailSchemaTransformer.imageName}:${images.contrailSchemaTransformer.imageTag}";
+        image = "${contrailSchemaTransformer.imageName}:${imageHash contrailSchemaTransformer}";
       }
     ];
   };
@@ -46,7 +45,7 @@ rec {
     port = 8089;
     containers = [
       {
-        image = "${images.contrailSvcMonitor.imageName}:${images.contrailSvcMonitor.imageTag}";
+        image = "${contrailSvcMonitor.imageName}:${imageHash contrailSvcMonitor}";
       }
     ];
   };
@@ -57,7 +56,7 @@ rec {
     port = 8081;
     containers = [
       {
-        image = "${images.contrailAnalytics.imageName}:${images.contrailAnalytics.imageTag}";
+        image = "${contrailAnalytics.imageName}:${imageHash contrailAnalytics}";
         livenessProbe = mkHTTPGetProbe "/" 8081 30 30 15;
         readinessProbe = mkHTTPGetProbe "/" 8081 30 30 15;
       }
@@ -70,7 +69,7 @@ rec {
     port = 5998;
     containers = [
       {
-        image = "${images.contrailDiscovery.imageName}:${images.contrailDiscovery.imageTag}";
+        image = "${contrailDiscovery.imageName}:${imageHash contrailDiscovery}";
         livenessProbe = mkHTTPGetProbe "/" 5998 30 30 15;
         readinessProbe = mkHTTPGetProbe "/" 5998 30 30 15;
       }
@@ -82,7 +81,7 @@ rec {
     service = "control";
     port = 5269;
     containers = [
-      { image = "${images.contrailControl.imageName}:${images.contrailControl.imageTag}"; }
+      { image = "${contrailControl.imageName}:${imageHash contrailControl}"; }
     ];
   } {
     spec = {
