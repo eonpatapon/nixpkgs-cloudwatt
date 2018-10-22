@@ -34,7 +34,7 @@ let
     application = "test";
     service = "service1";
     containers = [
-      { image = "${service1Image.imageName}:${service1Image.imageTag}"; }
+      { image = "${service1Image.imageName}:${lib.imageHash service1Image}"; }
     ];
   };
 
@@ -81,7 +81,7 @@ let
     vaultPolicy = "service2";
     containers = [
       {
-        image = "${service2Image.imageName}:${service2Image.imageTag}";
+        image = "${service2Image.imageName}:${lib.imageHash service2Image}";
         env = [
           { name = "test"; value = "test"; }
         ];

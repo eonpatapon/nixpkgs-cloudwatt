@@ -43,9 +43,9 @@ rec {
     inherit service port;
     application = "keystone";
     vaultPolicy = "keystone";
-    containers = with pkgs.dockerImages.pulled; with image; [
+    containers = with pkgs.dockerImages.pulled; [
       {
-        image = "${imageName keystoneAllImage}:${imageTag keystoneAllImage}";
+        image = "${keystoneAllImage.imageName}:${keystoneAllImage.imageTag}";
         lifecycle = {
           preStop = {
             exec = { command = ["/usr/sbin/stop-container"]; };
