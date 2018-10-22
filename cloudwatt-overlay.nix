@@ -35,6 +35,8 @@ in {
 
   dockerImages = callPackages ./pkgs/docker-images { contrailPath = contrail; };
 
+  hydra = callPackages ./pkgs/hydra { hydra = super.hydra; };
+
   tools = callPackages ./pkgs/tools { };
 
   neutron = callPackage ./pkgs/neutron { };

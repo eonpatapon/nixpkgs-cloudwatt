@@ -1,18 +1,8 @@
-{ pkgs, lib, dockerImages, perp, makeWrapper, curl, stdenv, waitFor, fetchpatch, perlPackages }:
+{ pkgs, hydra, lib, dockerImages, perp, makeWrapper, curl, stdenv, waitFor }:
 
 with lib;
 
-let hydra = pkgs.hydra.overrideAttrs(old: {
-      patches = [
-        # Add GitlabPulls plugin
-        (fetchpatch {
-          url = https://github.com/nlewo/hydra/commit/f90cdcb2e5dde7716d9ed83653644e4f8b2e5849.patch;
-          sha256 = "1z502pzbcpqad61fwf7xnmgqshdxql7zzja5jpk4f1pvyk732r03";
-        })
-      ];
-      buildInputs = old.buildInputs ++ [ perlPackages.CryptSSLeay ];
-      });
-    hydraServerCmd = "${hydra}/bin/hydra-server hydra-server -f -h 0.0.0.0 -p 3000 --max_spare_servers 5 --max_servers 25 --max_requests 100 -d";
+let hydraServerCmd = "${hydra}/bin/hydra-server hydra-server -f -h 0.0.0.0 -p 3000 --max_spare_servers 5 --max_servers 25 --max_requests 100 -d";
     hydraQueueRunnerCmd = "${hydra}/bin/hydra-queue-runner -vvvvv --option build-use-substitutes true";
     hydraEvaluator = "${hydra}/bin/hydra-evaluator -vvvvv";
 
@@ -239,10 +229,6 @@ in
       Env = [
         # hydra-queue-runner fails to start without this
         "LOGNAME=none"
-
-        # To do https queries through http proxy
-        "PERL_NET_HTTPS_SSL_SOCKET_CLASS=Net::SSL"
-        "PERL_LWP_SSL_VERIFY_HOSTNAME=0"
 
         "HYDRA_DATA=/${hydraBaseDir}"
         "HYDRA_CONFIG=/${hydraBaseDir}/hydra.conf"
