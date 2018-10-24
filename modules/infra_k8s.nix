@@ -318,11 +318,6 @@ in {
           ];
         };
         extraOpts = "--resolv-conf=/etc/kubernetes/kubelet/resolv.conf --volume-plugin-dir=/etc/kubernetes/volumeplugins";
-        seedDockerImages = with pkgs.dockerImages; [
-          kube2consulWorker
-          pulled.calicoNodeImage
-          calicoKubeControllers
-        ] ++ cfg.seedDockerImages;
       };
       controllerManager = {
         serviceAccountKeyFile = "${certs.master}/kube-service-accounts-key.pem";
@@ -346,6 +341,15 @@ in {
       };
       addonManager.enable = false;
       addons.dns.enable = false;
+    };
+
+    virtualisation.dockerPreloader = {
+      images = with pkgs.dockerImages; [
+        kube2consulWorker
+        pulled.calicoNodeImage
+        calicoKubeControllers
+        ] ++ cfg.seedDockerImages;
+      qcowSize = 2000;
     };
 
     systemd.services.kubelet = {
