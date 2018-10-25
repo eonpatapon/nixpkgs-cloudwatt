@@ -21,6 +21,10 @@
 
   keystoneK8S = callPackage ./keystone_k8s.nix { };
 
+  neutronK8S = callPackage ./neutron_k8s.nix {
+    inherit contrailPath contrailPkgs;
+  };
+
   contrailK8S = callPackage ./contrail_k8s.nix {
     inherit contrailPath contrailPkgs;
   };

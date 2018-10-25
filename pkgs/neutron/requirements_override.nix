@@ -5,8 +5,9 @@ self: super: rec {
     name = "neutron-lbaas-8.3.1";
     src = pkgs.fetchgit {
       url = https://github.com/openstack/neutron-lbaas.git;
-      rev = "659bcebc82d6dba2f792211d205308a4f1bb7116";
-      sha256 = "0q6wibalj55sx4924pih6l9v2wvjh0m6clc6ssf57l7v7x4y106b";
+      # This is the HEAD of the mitaka-eol branch
+      rev = "8d47cdb375b5fa52bea98823bc417100890ffb62";
+      sha256 = "0ay47f8aci314n3wmcidhfwz1x8q2x6rarpcy1s8r2vzi8qh95l1";
       leaveDotGit = true;
     };
     buildInputs = [ pkgs.git ];

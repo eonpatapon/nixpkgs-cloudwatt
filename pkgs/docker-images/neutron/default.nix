@@ -60,7 +60,8 @@ lib.buildImageWithPerps {
         consul-template-wrapper -- -once \
           -template="${neutronConf}:/etc/neutron/neutron.conf" \
           -template="${authtoken}:/etc/neutron/common.d/authtoken.conf" \
-          -template="${./config/contrailplugin.ini.ctmpl}:/etc/neutron/plugin.ini"
+          -template="${./config/contrailplugin.ini.ctmpl}:/etc/neutron/plugin.ini" \
+          -template="${./config/queue.conf.ctmpl}:/etc/neutron/common.d/queue.conf"
       '';
       fluentd = {
         source = {
@@ -72,6 +73,6 @@ lib.buildImageWithPerps {
    }
    {
      name = "cw-k8s-healthmonitor";
-     command = "${cwK8sHealthmonitor}/bin/cw-k8s-healthmonitor --health-monitor-config-file ${healthMonitorOverrides} --graphite-bridge-host graphite-relay.localdomain";
+     command = "${cwK8sHealthmonitor}/bin/cw-k8s-healthmonitor --health-monitor-config-file ${healthMonitorOverrides} --graphite-bridge-host graphite-relay.localdomain --component neutron-api";
    }];
 }
