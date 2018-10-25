@@ -62,4 +62,6 @@ in {
 
   prometheusMemcachedExporter = callPackages ./pkgs/prometheus-memcached-exporter { };
 
+  platforms = callPackages ./pkgs/platforms { };
+
 }

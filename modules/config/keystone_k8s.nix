@@ -10,8 +10,8 @@ rec {
   apiPort = 5000;
   adminApiPort = 35357;
 
-  keystoneApiAdminHost = "keystone-admin-api.service";
-  keystoneApiHost = "keystone-api.service";
+  keystoneApiAdminHost = "keystone-admin-api-pods.service";
+  keystoneApiHost = "keystone-api-pods.service";
 
   keystoneAdminPassword = "development";
   keystoneAdminToken = "development";
@@ -39,44 +39,37 @@ rec {
     '';
   };
 
-  keystoneDeployment = service: port: mkJSONDeployment {
-    inherit service port;
-    application = "keystone";
-    vaultPolicy = "keystone";
-    containers = with pkgs.dockerImages.pulled; [
-      {
-        image = "${keystoneAllImage.imageName}:${keystoneAllImage.imageTag}";
-        lifecycle = {
-          preStop = {
-            exec = { command = ["/usr/sbin/stop-container"]; };
+  k8sResources = { ... }: with pkgs.dockerImages; with pkgs.platforms; {
+    kubernetes.resources = {
+      deployments.keystone-admin-api = mkMerge [
+        (pkgs.lib.kubenix.loadYAML (lab2 + /kubernetes/keystone/admin-api.deployment.yml))
+        {
+          spec.replicas = 1;
+          spec.selector.matchLabels = { application = "keystone"; service = "admin-api"; };
+          # Since only resources.limits.memory is set in the deployment file k8s default
+          # the resources.requests.memory value to the limit value which is very high.
+          spec.template.spec.containers.keystone-admin-api = with pulled.keystoneAllImagePatched; {
+            resources.requests.memory = "5Mi";
+            image = "${imageName}:${pkgs.lib.imageHash pulled.keystoneAllImagePatched}";
           };
-        };
-        livenessProbe = mkHTTPGetProbe "/" 1988 10 30 15;
-        readinessProbe = mkHTTPGetProbe "/ready" 1988 10 30 15;
-        volumeMounts = [
-          { name = "vault-token-keystone-keys"; mountPath = "/run/vault-token-keystone-keys"; }
-        ];
-      }
-    ];
-    volumes = [
-      {
-        name = "vault-token-keystone-keys";
-        flexVolume = {
-          driver = "cloudwatt/vaulttmpfs";
-          options = {
-            "vault/policies" = "fernet-keys-read";
-            "vault/role" = "periodic-fernet-reader";
-            "vault/filePermissions" = "640";
-            "vault/unwrap" = "true";
+        }
+      ];
+      deployments.keystone-api = mkMerge [
+        (pkgs.lib.kubenix.loadYAML (lab2 + /kubernetes/keystone/api.deployment.yml))
+        {
+          spec.replicas = 1;
+          spec.selector.matchLabels = { application = "keystone"; service = "api"; };
+          spec.template.spec.containers.keystone-api = with pulled.keystoneAllImagePatched; {
+            resources.requests.memory = "5Mi";
+            image = "${imageName}:${pkgs.lib.imageHash pulled.keystoneAllImagePatched}";
           };
-        };
-      }
-    ];
-  };
-
-  keystoneService = service: mkJSONService {
-    inherit service;
-    application = "keystone";
+        }
+      ];
+      services.keystone-admin-api =
+        pkgs.lib.kubenix.loadYAML (lab2 + /kubernetes/keystone/admin-api-pods.service.yml);
+      services.keystone-api =
+        pkgs.lib.kubenix.loadYAML (lab2 + /kubernetes/keystone/api-pods.service.yml);
+    };
   };
 
 }

@@ -421,13 +421,12 @@ in {
           --user=admin \
           --user=kubelet \
           --group=system:serviceaccounts
-        kubectl apply -f /etc/kubernetes/openstack
         kubectl create -n kube-system secret generic calico-etcd-secrets \
           --from-file=etcd-ca=${certs.master}/ca.pem \
           --from-file=etcd-cert=${certs.master}/etcd.pem \
           --from-file=etcd-key=${certs.master}/etcd-key.pem
         kubectl apply -f /etc/kubernetes/infra/stage1
-        while [ $(kubectl --namespace kube-system get pods --field-selector=status.phase=Running 2>/dev/null | wc -l) -ne 3 ]
+        while [ $(kubectl --namespace kube-system get pods | grep calico | grep '1/1' | wc -l) -ne 2 ]
         do
           echo "Waiting on calico to be ready..."
           sleep 1
@@ -449,20 +448,14 @@ in {
         nameserver 169.254.1.10
         options timeout:1
       '';
-      "kubernetes/openstack/configmap.yml".source = kubeConfigMap;
-      # prodPreset to configure consul-template-wrapper
-      "kubernetes/infra/stage1/pod-preset.json".text = kubePodPreset;
-      # calico config to be applied in the cluster
-      "kubernetes/infra/stage1/calico-config-map.json".text = calicoConfigMap;
-      "kubernetes/infra/stage1/calico-node.serviceaccount.json".text = calicoNodeServiceAccount;
-      "kubernetes/infra/stage1/calico-kube-controllers.serviceaccount.json".text =
-        calicoKubeControllersServiceAccount;
-      # deployment of calico
-      "kubernetes/infra/stage1/calico-node.daemonset.json".text = calicoNodeDaemonSet;
-      "kubernetes/infra/stage1/calico-kube-controllers.deployment.json".text =
-        calicoKubeControllersDeployment;
+      # calico deployment
+      "kubernetes/infra/stage1/resources.json".source = pkgs.lib.kubenix.buildResources {
+        configuration = k8sStage1Resources;
+        # don't include calico secrets resource since they are created manually in kube-bootstrap service
+        resourceFilter = _: name: _: if name != "calico-etcd-secrets" then true else false;
+      };
       # kube2consul deployment
-      "kubernetes/infra/stage2/kube2consul.json".text = kube2consulDeployment;
+      "kubernetes/infra/stage2/resources.json".source = pkgs.lib.buildK8SResources k8sStage2Resources;
       # vaulttmpfs plugin must be placed in a special directory tree so that the kubelet can
       # find it. This directory is passed to the kubelet with the --volume-plugin-dir flag.
       "kubernetes/volumeplugins/cloudwatt~vaulttmpfs/vaulttmpfs".source =

@@ -74,10 +74,7 @@ in {
   config = mkIf cfg.enable {
 
     environment.etc = with keystoneConfig; {
-      "kubernetes/keystone/api.deployment.json".text = keystoneDeployment "api" apiPort;
-      "kubernetes/keystone/admin-api.deployment.json".text = keystoneDeployment "admin-api" adminApiPort;
-      "kubernetes/keystone/api.service.json".text = keystoneService "api";
-      "kubernetes/keystone/admin-api.service.json".text = keystoneService "admin-api";
+      "kubernetes/keystone/resources.json".source = pkgs.lib.buildK8SResources k8sResources;
       "openstack/admin-token.openrc".source = keystoneAdminTokenRc;
       "openstack/admin.openrc".source = keystoneAdminRc;
     };
@@ -108,7 +105,10 @@ in {
 
       enable = true;
 
-      seedDockerImages = [ pkgs.dockerImages.pulled.keystoneAllImage ];
+      seedDockerImages = with pkgs.dockerImages.pulled; [
+        keystoneAllImagePatched
+        mcrouterImage
+      ];
 
       consulData = with keystoneConfig; {
         "config/openstack/catalog/${region}/data" = defaultCatalog // cfg.catalog;
@@ -194,6 +194,18 @@ in {
         };
       };
 
+      externalServices = {
+        keystone-memcached = {
+          address = config.services.memcached.listen;
+          port = config.services.memcached.port;
+        };
+      };
+
+    };
+
+    services.memcached = {
+      enable = true;
+      listen = "169.254.1.54";
     };
 
     mysql.k8s = {

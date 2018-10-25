@@ -101,11 +101,11 @@ let
         cores = 2;
       };
 
-      # # forward some ports on the host for debugging
-      # virtualisation.qemu.networkingOptions = [
-      #   "-net nic,netdev=user.0,model=virtio"
-      #   "-netdev user,id=user.0,hostfwd=tcp::2221-:22"
-      # ];
+      # forward some ports on the host for debugging
+      virtualisation.qemu.networkingOptions = [
+        "-net nic,netdev=user.0,model=virtio"
+        "-netdev user,id=user.0,hostfwd=tcp::2221-:22"
+      ];
 
     };
 
@@ -117,10 +117,10 @@ let
       [auth]
       AUTHN_TYPE = keystone
       AUTHN_PROTOCOL = http
-      AUTHN_SERVER = keystone-api.service
+      AUTHN_SERVER = keystone-api-pods.service
       AUTHN_PORT = 5000
       AUTHN_URL = /v2.0/tokens
-      AUTHN_TOKEN_URL = http://keystone-api.service:5000/v2.0/tokens
+      AUTHN_TOKEN_URL = http://keystone-api-pods.service:5000/v2.0/tokens
     '';
   };
 
@@ -177,7 +177,7 @@ let
 
   testScript = ''
     $controller->start();
-    $controller->sleep(300);
+    $controller->sleep(200);
     $controller->waitForUnit("contrail.service");
 
     # check services state

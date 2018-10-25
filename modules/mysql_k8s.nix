@@ -6,7 +6,6 @@ with lib;
 let
 
   cfg = config.mysql.k8s;
-  port = 3306;
 
   createDatabaseUser = db: user: password: ''
     echo "CREATE USER IF NOT EXISTS '${user}'@'%' IDENTIFIED BY '${password}';" | mysql -u root -N
@@ -58,7 +57,7 @@ in {
     infra.k8s = {
       enable = true;
       externalServices = listToAttrs (
-        map (a: nameValuePair a { address = cfg.address; inherit port; }) cfg.aliases
+        map (a: nameValuePair a { address = cfg.address; port = config.services.mysql.port; }) cfg.aliases
       );
     };
 

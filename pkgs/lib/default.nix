@@ -4,6 +4,13 @@ let
 
   callLibs = file: import file { inherit pkgs lib; };
 
+  kubenixSrc = pkgs.fetchFromGitHub {
+    owner = "xtruder";
+    repo = "kubenix";
+    rev = "7287c4ed9ee833ccbce2185038c068bac9c77e7c";
+    sha256 = "1f69h31nfpifa6zmgrxiq72cchb6xmrcsy68ig9n8pmrwdag1lgq";
+  };
+
   lib = rec {
 
     contrail = callLibs ./contrail.nix;
@@ -14,6 +21,8 @@ let
     fluentd = callLibs ./fluentd.nix;
     trivialBuilders = callLibs ./trivial-builders.nix;
     k8s = callLibs ./k8s.nix;
+    kubenix = import kubenixSrc { inherit pkgs; } //
+              import (kubenixSrc + /k8s.nix) { inherit pkgs; lib = pkgs.lib; };
 
     inherit (contrail) buildContrailImageWithPerp buildContrailImageWithPerps;
 
@@ -27,6 +36,9 @@ let
     inherit (trivialBuilders) writeConsulTemplateFile writeYamlFile;
 
     inherit (k8s) mkJSONDeployment mkJSONDeployment' mkJSONService mkHTTPGetProbe;
+
+    buildK8SResources = configuration: kubenix.buildResources { inherit configuration; };
+
   };
 
 in lib
