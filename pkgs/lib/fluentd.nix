@@ -7,7 +7,16 @@ rec {
 
   enableFluentd = any enableFluentdForService;
 
-  enableFluentdForService = pkgs.lib.hasAttrByPath [ "fluentd" "source" "type" ];
+  enableFluentdForService = { name, fluentd ? {}, ... }:
+    if fluentd != {} then
+      if ! isAttrs fluentd then
+        abort "Service ${name} fluentd configuration should be an attribute set."
+      else if hasAttrByPath [ "source" "type" ] fluentd then
+        true
+      else
+        abort "Service ${name} has a fluentd configuration but no source is specified."
+    else
+      false;
 
   captureServiceStdout = service:
     service ? fluentd && service.fluentd ? source && captureSourceStdout service.fluentd.source;

@@ -27,7 +27,7 @@ in {
       consul-template-wrapper -- -once \
         -template="${config.discovery}:/run/consul-template-wrapper/contrail/contrail-discovery.conf"
     '';
-    fluentd = config.fluentdForPythonService;
+    fluentd = config.fluentdForPythonService {};
   };
 
   contrailControl = lib.buildContrailImageWithPerp {
@@ -65,7 +65,7 @@ in {
       {
         name = "opencontrail-analytics-api";
         command = "${contrail32Cw.analyticsApi}/bin/contrail-analytics-api --conf_file /run/consul-template-wrapper/contrail/contrail-analytics-api.conf";
-        fluentd = config.fluentdForPythonService;
+        fluentd = config.fluentdForPythonService {};
         after = ["consul-template"];
       }
       {
@@ -94,7 +94,7 @@ in {
         -template="${config.schemaTransformer}:/run/consul-template-wrapper/contrail/contrail-schema-transformer.conf" \
         -template="${config.vncApiLib}:/run/consul-template-wrapper/contrail/vnc_api_lib.ini"
     '';
-    fluentd = config.fluentdForPythonService;
+    fluentd = config.fluentdForPythonService {};
   };
 
   contrailSvcMonitor = lib.buildContrailImageWithPerp {
@@ -105,6 +105,6 @@ in {
         -template="${config.svcMonitor}:/run/consul-template-wrapper/contrail/contrail-svc-monitor.conf" \
         -template="${config.vncApiLib}:/run/consul-template-wrapper/contrail/vnc_api_lib.ini"
     '';
-    fluentd = config.fluentdForPythonService;
+    fluentd = config.fluentdForPythonService {};
   };
 }
