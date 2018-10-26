@@ -216,6 +216,16 @@ let
     # ping controller via SNAT
     # first ping may fails, but next one should succeed
     $vrouter1->waitUntilSucceeds("ip netns exec ns-vm1 ping -c1 192.168.1.1");
+
+    # check that all services logs are captured
+    $controller->succeed("journalctl --unit fluentd --no-pager --grep log.opencontrail-api");
+    $controller->succeed("journalctl --unit fluentd --no-pager --grep log.opencontrail-discovery");
+    $controller->succeed("journalctl --unit fluentd --no-pager --grep log.opencontrail-svc-monitor");
+    $controller->succeed("journalctl --unit fluentd --no-pager --grep log.opencontrail-schema-transformer");
+    $controller->succeed("journalctl --unit fluentd --no-pager --grep log.opencontrail-analytics-api");
+    $controller->succeed("journalctl --unit fluentd --no-pager --grep log.opencontrail-collector");
+    $controller->succeed("journalctl --unit fluentd --no-pager --grep log.opencontrail-query-engine");
+    $controller->succeed("journalctl --unit fluentd --no-pager --grep log.opencontrail-control");
   '';
 
 in

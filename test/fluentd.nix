@@ -118,9 +118,9 @@ let
     $machine->succeed("${runStack}");
     # fluentd has flush_interval set to 10s
     $machine->sleep(10);
-    $machine->waitUntilSucceeds("journalctl --unit fluentd --no-pager | grep stdout-svc");
-    $machine->waitUntilSucceeds("journalctl --unit fluentd --no-pager | grep stderr-svc");
-    $machine->waitUntilSucceeds("journalctl --unit fluentd --no-pager | grep syslog-svc");
+    $machine->waitUntilSucceeds("journalctl --unit fluentd --no-pager --grep stdout-svc");
+    $machine->waitUntilSucceeds("journalctl --unit fluentd --no-pager --grep stderr-svc");
+    $machine->waitUntilSucceeds("journalctl --unit fluentd --no-pager --grep syslog-svc");
   '';
 in
   makeTest { name = "fluentd"; nodes = { inherit machine; }; testScript = testScript; }
