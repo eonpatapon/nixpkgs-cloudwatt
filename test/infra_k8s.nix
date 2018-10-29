@@ -193,7 +193,7 @@ let
     $master->waitUntilSucceeds("kubectl exec \$(kubectl get pod -l service=service2 -o jsonpath='{.items[0].metadata.name}') -- cat /run/consul-template-wrapper/result | grep -q foo");
     $master->waitUntilSucceeds("kubectl exec \$(kubectl get pod -l service=service2 -o jsonpath='{.items[0].metadata.name}') -- cat /run/consul-template-wrapper/result | grep -q plop");
     # check fluentd forwarding
-    $master->waitUntilSucceeds("journalctl --unit fluentd --no-pager | grep -q service1");
+    $master->waitUntilSucceeds("journalctl --unit fluentd --no-pager --grep service1");
   '';
 
 in
