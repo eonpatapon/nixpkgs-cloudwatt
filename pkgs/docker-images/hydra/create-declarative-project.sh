@@ -29,6 +29,7 @@ cat >data.json <<EOF
 {
   "displayname":"Cloudwatt Hydra CI",
   "enabled":"1",
+  "visible":"1",
   "declfile": "$DECL_FILE",
   "decltype":"$DECL_TYPE",
   "declvalue":"$DECL_VALUE"
