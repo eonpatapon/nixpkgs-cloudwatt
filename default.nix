@@ -5,4 +5,5 @@
 
 let
   cloudwatt = import ./cloudwatt-overlay.nix { inherit contrail; };
-in import nixpkgs { overlays = [ cloudwatt ]; }
+  ourNixpkgs = import ./nixpkgs-patch.nix nixpkgs;
+in import ourNixpkgs { overlays = [ cloudwatt ]; }

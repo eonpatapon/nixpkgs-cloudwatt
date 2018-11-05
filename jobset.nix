@@ -17,7 +17,8 @@
 }:
 
 let
-  pkgs = import nixpkgs { overlays = [ cloudwattOverlay ]; };
+  ourNixpkgs = import ./nixpkgs-patch.nix nixpkgs;
+  pkgs = import ourNixpkgs { overlays = [ cloudwattOverlay ]; };
   cloudwattOverlay = import ./cloudwatt-overlay.nix { inherit contrail; };
   getCommitId = pkgs.runCommand "nixpkgs-cloudwatt-commit-id" { buildInputs = [ pkgs.git ]; } ''
     git -C ${cloudwatt} rev-parse HEAD > $out
