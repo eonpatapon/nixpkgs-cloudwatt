@@ -7,6 +7,7 @@ let
   lib = rec {
 
     contrail = callLibs ./contrail.nix;
+    constants = import ./constants.nix;
     image  = callLibs ./image.nix;
     debian = callLibs ./debian.nix;
     tools = callLibs ./ubuntu-vm.nix;

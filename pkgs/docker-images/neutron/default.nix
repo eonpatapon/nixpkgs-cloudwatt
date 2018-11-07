@@ -17,12 +17,10 @@ let
     '';
   };
 
-  # We don't want to fetch it from git.corp.cloudwatt.net because this
-  # cannot be pulled from the sec environment.
   stopContainer = stdenv.mkDerivation {
     name = "stop-container";
     src = fetchgit {
-      url = "https://git.sec.cloudwatt.com/docker/openstack-base.git";
+      url = "${lib.constants.gitUrl}/docker/openstack-base.git";
       rev = "d92921237f057d802c85e7194bed629a0b5855bd";
       sha256 = "0n3yvlmjj4wg59g4mb7i4gs3b47z18s196cm7av0dd1nv4gfnw3p";
     };
