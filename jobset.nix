@@ -14,11 +14,17 @@
 , unsetProxyForSkopeo ? false
 , unsetProxyForAptly ? false
 , aptlyUrl ? "http://aptly.int0.aub.cloudwatt.net/api"
+# Since git.corp is not reachable from the sec environment, we need to
+# override the gitUrl of such repositories
+, gitUrl ? "https://git.corp.cloudwatt.com"
 }:
 
 let
+  jobsetOverlay = super: self: {
+    lib = self.lib // { constants = { inherit gitUrl; }; };
+  };
   ourNixpkgs = import ./nixpkgs-patch.nix nixpkgs;
-  pkgs = import ourNixpkgs { overlays = [ cloudwattOverlay ]; };
+  pkgs = import ourNixpkgs { overlays = [ cloudwattOverlay jobsetOverlay ]; };
   cloudwattOverlay = import ./cloudwatt-overlay.nix { inherit contrail; };
   getCommitId = pkgs.runCommand "nixpkgs-cloudwatt-commit-id" { buildInputs = [ pkgs.git ]; } ''
     git -C ${cloudwatt} rev-parse HEAD > $out

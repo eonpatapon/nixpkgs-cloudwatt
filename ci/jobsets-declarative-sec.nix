@@ -49,6 +49,11 @@ let
           type = "string";
           emailresponsible = false;
         };
+        gitUrl = {
+          value = "https://git.sec.cloudwatt.com";
+          type = "string";
+          emailresponsible = false;
+        };
       };
     };
 
@@ -72,6 +77,11 @@ let
         bootstrap_pkgs = {
           value = "https://git.sec.cloudwatt.com/applications/nixpkgs acd89daabcb47cb882bc72ffc2d01281ed1fecb8";
           type = "git";
+          emailresponsible = false;
+        };
+        gitUrl = {
+          value = "https://git.sec.cloudwatt.com";
+          type = "string";
           emailresponsible = false;
         };
       };
@@ -121,6 +131,11 @@ let
         };
         aptlyUrl = {
           value = "http://aptly-api.sec.cloudwatt.com/api";
+          type = "string";
+          emailresponsible = false;
+        };
+        gitUrl = {
+          value = "https://git.sec.cloudwatt.com";
           type = "string";
           emailresponsible = false;
         };

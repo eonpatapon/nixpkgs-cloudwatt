@@ -1,4 +1,4 @@
-{ stdenv, pkgs, python27Packages, fetchgit }:
+{ stdenv, pkgs, lib, python27Packages, fetchgit }:
 
 let
   generated = import ./requirements.nix { inherit pkgs; };
@@ -10,7 +10,7 @@ python27Packages.buildPythonApplication {
   PBR_VERSION = "0.1";
 
   src = fetchgit {
-    url = "https://git.sec.cloudwatt.com/applications/cw_k8s_healthmonitor.git";
+    url = "${lib.constants.gitUrl}/applications/cw_k8s_healthmonitor.git";
     rev = "469c20cd011c5afb40dc1fb92fc1acf0ca4ef5f8";
     sha256 = "0qglk8ac547h4b5hh0midvzs2865f05c7bllnms8508kxp8x2ssw";
   };

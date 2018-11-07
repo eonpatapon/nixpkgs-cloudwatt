@@ -1,4 +1,4 @@
-{ pkgs, stdenv, python27Packages, fetchgit, contrail32Cw }:
+{ pkgs, lib, stdenv, python27Packages, fetchgit, contrail32Cw }:
 
 let
 
@@ -15,7 +15,7 @@ in python27Packages.buildPythonApplication {
 
   # prb needs a git repository to get the version
   src = fetchgit {
-    url = "https://git.corp.cloudwatt.com/applications/neutron.git";
+    url = "${lib.constants.gitUrl}/applications/neutron.git";
     rev = "7b7c044a3b8f63f2a6a39ddc119dfae706d02ad4";
     sha256 = "1334fkh6jbinry0qvmj1n7ydih17zaas3i7v4apgjb7vs104hhx6";
     leaveDotGit = true;
