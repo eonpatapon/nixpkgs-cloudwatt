@@ -2,7 +2,7 @@
 let inherit (super) callPackage callPackages;
 in {
 
-  lib = (super.lib or {}) // (callPackages ./pkgs/lib { });
+  lib = (super.lib or {}) // (import ./pkgs/lib { pkgs = self; });
 
   perp = callPackage ./pkgs/perp { };
 
