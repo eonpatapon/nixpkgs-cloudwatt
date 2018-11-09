@@ -6,8 +6,8 @@ in {
     owner = "NixOS";
     repo = "nixpkgs";
     # Belong to the branch release-18.09
-    rev = "f12ea6195e4819586ee174d4ef9113b2c1007045";
-    sha256 = "07fj3bdq38fcab7acfv0ynxc849g98fd0a671apmjzfbqjg7bm68";};
+    rev = "094ff6cf6a9b97e4963f1bc99104bc71a5063371";
+    sha256 = "17930p3f5a9i0mmdhpwqgb3gm6zyk1xfj5hhqrfcfp80c7rrq17s";};
   contrail = bootstrap_pkgs.fetchFromGitHub {
     owner = "nlewo";
     repo = "nixpkgs-contrail";
