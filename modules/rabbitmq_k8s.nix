@@ -53,6 +53,7 @@ in {
     services.rabbitmq = {
       enable = true;
       listenAddress = cfg.address;
+      plugins = [ "rabbitmq_management" ];
     };
 
     systemd.services.rabbitmq-bootstrap = {
@@ -69,6 +70,7 @@ in {
         ${concatStringsSep "\n" (map (v: ''
           rabbitmqctl add_user ${v} development
           rabbitmqctl add_vhost ${v}
+          rabbitmqctl set_user_tags ${v} administrator management
           rabbitmqctl set_policy -p ${v} ha-all '^(?!amq\.).*' '{"ha-mode":"all"}'
           rabbitmqctl set_permissions -p ${v} ${v} '.*' '.*' '.*'
         '') cfg.vhosts)}
