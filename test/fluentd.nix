@@ -79,16 +79,6 @@ let
     ];
   };
 
-  runStack = lib.runDockerComposeStack {
-    version = "2";
-    services = {
-      test = {
-        image = builtins.baseNameOf testImage;
-        network_mode = "host";
-      };
-    };
-  };
-
   machine = { config, ... }: {
     config = rec {
       services.openssh.enable = true;
@@ -98,6 +88,7 @@ let
 
       virtualisation = { diskSize = 4960; memorySize = 1024; };
       virtualisation.docker.enable = true;
+      virtualisation.dockerPreloader.images = [ testImage ];
 
       networking.hosts = {
         "127.0.0.1" = [ "fluentd.localdomain" ];
@@ -112,10 +103,10 @@ let
     };
   };
 
-  testScript = ''
+  testScript = with lib; ''
     $machine->waitForUnit("docker.service");
     $machine->waitForUnit("fluentd.service");
-    $machine->succeed("${runStack}");
+    $machine->succeed("docker run -d --net host ${testImage.imageName}:${imageHash testImage}");
     # fluentd has flush_interval set to 10s
     $machine->sleep(10);
     $machine->waitUntilSucceeds("journalctl --unit fluentd --no-pager --grep stdout-svc");
@@ -124,4 +115,3 @@ let
   '';
 in
   makeTest { name = "fluentd"; nodes = { inherit machine; }; testScript = testScript; }
-    // { driverDockerCompose = runStack; }
