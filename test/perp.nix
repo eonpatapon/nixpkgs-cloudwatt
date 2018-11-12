@@ -299,12 +299,6 @@ let
         };
       };
 
-  loadImage = test: ''
-    $machine->succeed("docker load -i ${test.image}");
-  '';
-
-  loadImages = concatStringsSep "\n" (map loadImage tests);
-
   runImage = test: with test; with lib.image; ''
     $machine->succeed("docker run --rm -d --name ${name} -h ${name} ${image.imageName}:${imageHash image}");
   '';
@@ -327,13 +321,13 @@ let
 
       virtualisation = { diskSize = 4960; memorySize = 1024; };
       virtualisation.docker.enable = true;
+      virtualisation.dockerPreloader.images = map (t: t.image) tests;
     };
   };
 
   testScript = ''
     $machine->waitForUnit("docker.service");
     $machine->succeed("docker container prune --force");
-    ${loadImages}
     ${runImages}
     ${runTests}
   '';
