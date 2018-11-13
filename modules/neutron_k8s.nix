@@ -7,22 +7,22 @@ let
 
   cfg = config.neutron.k8s;
 
-  neutronService = pkgs.lib.mkJSONService {
-    application = "neutron";
-    service = "api";
-  };
-
-  neutronDeployment = pkgs.lib.mkJSONDeployment {
-    application = "neutron";
-    vaultPolicy = "neutron,nova";
-    service = "api";
-    port = 9696;
-    containers = [ {
-      image = with pkgs.dockerImages; "${neutron.imageName}:${pkgs.lib.imageHash neutron}";
-      livenessProbe = pkgs.lib.mkHTTPGetProbe "/" 1988 10 30 15;
-      readinessProbe = pkgs.lib.mkHTTPGetProbe "/ready" 1988 10 30 15;
-      lifecycle = { preStop = { exec = { command = ["/usr/sbin/stop-container"]; };};};
-    } ];
+  k8sResources = { ... }: with pkgs.dockerImages; with pkgs.platforms; {
+    kubernetes.resources = {
+      deployments.neutron-api = mkMerge [
+        (pkgs.lib.kubenix.loadYAML (lab2 + /kubernetes/neutron/api.deployment.yml))
+        {
+          spec.replicas = 1;
+          spec.selector.matchLabels.application = "neutron";
+          spec.template.spec.containers.neutron-api = {
+            resources.requests.memory = "5Mi";
+            image = "${neutron.imageName}:${pkgs.lib.imageHash neutron}";
+          };
+        }
+      ];
+      services.neutron-api =
+        pkgs.lib.kubenix.loadYAML (lab2 + /kubernetes/neutron/api-pods.service.yml);
+    };
   };
 
 in {
@@ -89,16 +89,15 @@ in {
       catalog = {
         "network" = {
           "name" = "neutron";
-          "admin_url" = "http://neutron-api.service:9696";
-          "internal_url" = "http://neutron-api.service:9696";
-          "public_url" = "http://neutron-api.service:9696";
+          "admin_url" = "http://neutron-api-pods.service:9696";
+          "internal_url" = "http://neutron-api-pods.service:9696";
+          "public_url" = "http://neutron-api-pods.service:9696";
         };
       };
     };
 
     environment.etc = {
-      "kubernetes/neutron/api.deployment.json".text = neutronDeployment;
-      "kubernetes/neutron/api.service.json".text = neutronService;
+      "kubernetes/neutron/resources.json".source = pkgs.lib.buildK8SResources k8sResources;
     };
 
     systemd.services.neutron = {

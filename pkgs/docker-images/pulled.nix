@@ -1,6 +1,6 @@
 { dockerTools }:
 
-{
+rec {
 
   kubernetesBaseImage = dockerTools.pullImage {
     imageName = "docker-registry.sec.cloudwatt.com/kubernetes/base";
@@ -17,17 +17,40 @@
   };
 
   keystoneAllImage = dockerTools.pullImage {
-    imageName = "r.cwpriv.net/keystone/all";
-    imageDigest = "sha256:8b69e19bde33a5efc4b24ff46524a0363823265c776f3c66a1b2e5b2a7e64651";
-    finalImageTag = "9.0.0-61516ea9ed2202a1";
-    sha256 = "0lwkqim968yrz63zamrch6jdilzm7i5j5ag47abk8hqicdkx1502";
+    imageName = "docker-registry.sec.cloudwatt.com/keystone/all";
+    imageDigest = "sha256:044d3961a025dc5d29139152ef429934958d25cbc6b6b5f94e4acf83ca5b188e";
+    finalImageTag = "11.0.3-4-32e312e4e8b8b842";
+    sha256 = "0j6y8bj57kd7qv0wcv0gjql1pnjg52yi4nhl03xhx1diyhh0a2lp";
+  };
+
+  # FIXME: remove when patch is included in upstream image
+  keystoneAllImagePatched = dockerTools.buildImage {
+    name = "openstack/keystone";
+    fromImage = keystoneAllImage;
+    config = {
+      Cmd = [ "/usr/sbin/perpd" ];
+      Env = [
+        "application=keystone"
+        "PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/opt/keystone/bin"
+      ];
+    };
+    runAsRoot = ''
+      echo "http-keepalive = 5" >> /opt/keystone/etc/uwsgi.ini
+    '';
+  };
+
+  mcrouterImage = dockerTools.pullImage {
+    imageName = "docker-registry.sec.cloudwatt.com/mcrouter/mcrouter";
+    imageDigest = "sha256:abedb4c94b5dffb46e723e56cc1753229123b2cd1642dd4d2e7e3992e9e76bdb";
+    finalImageTag = "v0.36.0-b9bb358354e806e9";
+    sha256 = "15il6bxr7alicqzxc7fazyz5pzrpys332i5kwrxcf1ffj1a72n8s";
   };
 
   calicoNodeImage = dockerTools.pullImage {
     imageName = "quay.io/calico/node";
-    imageDigest = "sha256:a35541153f7695b38afada46843c64a2c546548cd8c171f402621736c6cf3f0b";
-    finalImageTag = "v3.1.3";
-    sha256 = "0gbqlkn5ajx33ibmad1pmkg3hhqcq2nqxqhaqq80jn6yi6hr74rf";
+    imageDigest = "sha256:c8314fef1eca4fe3f9a17276a53d9a9e141ecd51166fb506d3e2414bda19f7d5";
+    finalImageTag = "v3.1.4";
+    sha256 = "1yaig1b23dw5kpfl439mm9p8yfq2nir1crpa9yljq60g0m97cpkb";
   };
 
 }
