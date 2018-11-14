@@ -36,6 +36,8 @@ in
   vrouter_ubuntu_3_13_0_141_generic = vrouterUbuntu contrailPkgs.vrouter_ubuntu_3_13_0_141_generic;
   vrouter_ubuntu_3_13_0_143_generic = vrouterUbuntu contrailPkgs.vrouter_ubuntu_3_13_0_143_generic;
   vrouter_ubuntu_4_4_0_101_generic = vrouterUbuntu contrailPkgs.vrouter_ubuntu_4_4_0_101_generic;
+  vrouter_ubuntu_4_4_0_137_generic = vrouterUbuntu contrailPkgs.vrouter_ubuntu_4_4_0_137_generic;
+
 
   contrailVrouterUserland = lib.mkDebianPackage rec {
     name = "contrail-vrouter-userland";
