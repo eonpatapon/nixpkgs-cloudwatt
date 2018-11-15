@@ -1,12 +1,9 @@
-{ pkgs
-, contrailPkgs
-, contrailPath
-}:
+{ pkgs, contrailPkgs }:
 
 with import (pkgs.path + /nixos/lib/testing.nix) { system = builtins.currentSystem; };
 
 let
-  apiConf = import (contrailPath + "/test/configuration/R3.2/api.nix") { inherit pkgs; };
+  apiConf = import (contrailPkgs.path + "/test/configuration/R3.2/api.nix") { inherit pkgs; };
 
   # First generate a dump:
   # $ mkdir -p /tmp/cassandra-dump'
@@ -23,10 +20,10 @@ let
     stripRoot = false;
   };
 
-  machine = {pkgs, config, ...}: {
+  machine = { pkgs, config, ... }: {
     imports = [
-      (contrailPath + "/modules/contrail-database-loader.nix")
-      (contrailPath + "/modules/contrail-api.nix")
+      (contrailPkgs.modules + "/contrail-database-loader.nix")
+      (contrailPkgs.modules + "/contrail-api.nix")
     ];
     config = {
       _module.args = { inherit contrailPkgs; };

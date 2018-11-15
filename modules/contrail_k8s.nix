@@ -58,7 +58,7 @@ in {
       enable = true;
       seedDockerImages = with pkgs.dockerImages; [
         contrailDiscovery
-        contrailApi
+        contrailApiServer
         contrailSchemaTransformer
         contrailSvcMonitor
         contrailAnalytics
@@ -123,7 +123,7 @@ in {
     };
 
     environment.systemPackages = with pkgs; [
-      contrail32Cw.tools.contrailApiCliWithExtra
+      contrailApiCliWithExtra
     ];
 
     environment.variables = {
@@ -135,7 +135,7 @@ in {
       serviceConfig.RemainAfterExit = true;
       wantedBy = [ "kubernetes.target" ];
       after = [ "keystone.service" "cassandra.service" "rabbitmq-bootstrap.service" "zookeeper.service" ];
-      path = with pkgs; [ kubectl waitFor contrail32Cw.tools.contrailApiCliWithExtra ];
+      path = with pkgs; [ kubectl waitFor contrailApiCliWithExtra ];
       environment = {
         CONTRAIL_API_HOST = "opencontrail-api.service";
       };

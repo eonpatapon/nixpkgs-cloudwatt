@@ -23,7 +23,7 @@ in python27Packages.buildPythonApplication {
 
   doCheck = false;
   buildInputs = [ pkgs.git ];
-  propagatedBuildInputs = builtins.attrValues generated.packages ++ [ ps.contrailNeutronPlugin ];
+  propagatedBuildInputs = builtins.attrValues generated.packages ++ [ ps.contrail_neutron_plugin ];
 
   meta = with stdenv.lib; {
     maintainers = with maintainers; [ lewo ];
@@ -31,5 +31,5 @@ in python27Packages.buildPythonApplication {
 }
 # This is then used in the neutron.conf file
 // { apiExtensionPath = pkgs.lib.concatStringsSep ":" [
-  "extensions:${ps.contrailNeutronPlugin}/lib/python2.7/site-packages/neutron_plugin_contrail/extensions"
+  "extensions:${ps.contrail_neutron_plugin}/lib/python2.7/site-packages/neutron_plugin_contrail/extensions"
   "extensions:${ps.neutron-lbaas}/lib/python2.7/site-packages/neutron_lbaas/extensions" ]; }

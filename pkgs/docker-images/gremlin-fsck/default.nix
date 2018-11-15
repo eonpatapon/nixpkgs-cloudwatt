@@ -1,4 +1,4 @@
-{ lib, contrail32Cw, writeTextFile }:
+{ lib, writeTextFile, contrailApiCliWithExtra }:
 
 let
   fsckEnv = writeTextFile {
@@ -36,7 +36,7 @@ in
         name = "gremlin-fsck";
         preStartScript = fsckPreStart;
         environmentFile = "/run/consul-template-wrapper/env";
-        command = "${contrail32Cw.tools.contrailApiCliWithExtra}/bin/contrail-api-cli fsck";
+        command = "${contrailApiCliWithExtra}/bin/contrail-api-cli fsck";
         fluentd = {
           source = {
             type = "stdout";

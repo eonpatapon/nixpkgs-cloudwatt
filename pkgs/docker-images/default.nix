@@ -1,6 +1,6 @@
-{ callPackage, callPackages, contrailPath }:
+{ callPackage, callPackages }:
 
-callPackages ./contrail { inherit contrailPath; } //
+callPackages ./contrail { } //
 {
   hydra = callPackage ./hydra { };
 

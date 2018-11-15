@@ -1,4 +1,4 @@
-{ pkgs, lib, contrailPkgs, contrailPath }:
+{ pkgs, lib, contrailPkgs }:
 
 with import (pkgs.path + /nixos/lib/testing.nix) { system = builtins.currentSystem; };
 
@@ -12,7 +12,7 @@ let
 
     imports = [
       ../modules/infra_k8s.nix
-      (contrailPath + /modules/cassandra.nix)
+      (contrailPkgs.modules + /cassandra.nix)
       ../modules/contrail_k8s.nix
       ../modules/neutron_k8s.nix
     ];
@@ -125,10 +125,10 @@ let
   };
 
   vrouter = ip: { config, ... }: {
-    imports = [ (contrailPath + "/modules/compute-node.nix") ];
+    imports = [ (contrailPkgs.modules + "/compute-node.nix") ];
 
     config = {
-      _module.args = { inherit contrailPkgs; isContrailMaster=false; isContrail32=true; };
+      _module.args = { inherit pkgs contrailPkgs; };
 
       services.openssh.enable = true;
       services.openssh.permitRootLogin = "yes";
