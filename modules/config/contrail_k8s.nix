@@ -21,7 +21,7 @@ rec {
     port = 8082;
     containers = [
       {
-        image = "${contrailApi.imageName}:${imageHash contrailApi}";
+        image = "${contrailApiServer.imageName}:${imageHash contrailApiServer}";
         livenessProbe = mkHTTPGetProbe "/" 8082 15 30 15;
         readinessProbe = mkHTTPGetProbe "/" 8082 15 30 15;
       }

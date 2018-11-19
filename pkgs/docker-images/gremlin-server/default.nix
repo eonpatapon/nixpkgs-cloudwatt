@@ -1,10 +1,10 @@
-{ lib, contrail32Cw, writeTextFile, fetchurl }:
+{ lib, writeTextFile, fetchurl, gremlinServer, contrailGremlin }:
 
 let
   serverPreStart = ''
     export JAVA_OPTIONS="$JAVA_OPTIONS -Dlog4j.configuration=file:${log4jProperties} -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.authenticate=false -javaagent:${prometheusJmxExporter}=1234:${prometheusJmxExporterConf}"
     export GREMLIN_DUMP_CASSANDRA_SERVERS=opencontrail-config-cassandra.service
-    ${contrail32Cw.tools.contrailGremlin}/bin/gremlin-dump ${dumpPath}
+    ${contrailGremlin}/bin/gremlin-dump ${dumpPath}
   '';
 
   serverConf = writeTextFile {
@@ -100,8 +100,8 @@ in
       {
         name = "gremlin-server";
         preStartScript = serverPreStart;
-        chdir = "${contrail32Cw.tools.gremlinServer}/opt";
-        command = "${contrail32Cw.tools.gremlinServer}/bin/gremlin-server ${serverConf}";
+        chdir = "${gremlinServer}/opt";
+        command = "${gremlinServer}/bin/gremlin-server ${serverConf}";
         fluentd = {
           source = {
             type = "stdout";
@@ -114,7 +114,7 @@ in
         name = "gremlin-sync";
         preStartScript = syncPreStart;
         environmentFile = "/run/consul-template-wrapper/env";
-        command = "${contrail32Cw.tools.contrailGremlin}/bin/gremlin-sync";
+        command = "${contrailGremlin}/bin/gremlin-sync";
         fluentd = {
           source = {
             type = "stdout";
@@ -125,6 +125,6 @@ in
       }
     ];
     contents = [
-      contrail32Cw.tools.contrailGremlin
+      contrailGremlin
     ];
   }

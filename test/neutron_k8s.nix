@@ -2,7 +2,6 @@
 , lib
 , stdenv
 , contrailPkgs
-, contrailPath
 }:
 
 with import (pkgs.path + /nixos/lib/testing.nix) { system = builtins.currentSystem; };
@@ -43,8 +42,8 @@ let
   machine = { config, ... }: {
     imports = [
       ../modules/neutron_k8s.nix
-      (contrailPath + "/modules/contrail-api.nix")
-      (contrailPath + "/modules/cassandra.nix")
+      (contrailPkgs.modules + "/contrail-api.nix")
+      (contrailPkgs.modules + "/cassandra.nix")
     ];
 
     config = {

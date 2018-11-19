@@ -6,7 +6,7 @@
 , contrail ? fetched.contrail
 # Should contain the path of the nixpkgs-cloudwatt repository.
 # This is used to get the commit id.
-, cloudwatt
+, cloudwatt ? ./.
 # Set it to true to push image to the Docker registry
 , pushToDockerRegistry ? false
 # Set it to true to publish Debian packages to Aptly
@@ -23,20 +23,23 @@ let
   jobsetOverlay = super: self: {
     lib = self.lib // { constants = { inherit gitUrl; }; };
   };
+  toolsOverlay = import (contrail + /tools-overlay.nix);
+  contrailOverlay = import (contrail + /contrail-overlay.nix);
+  cloudwattOverlay = import ./cloudwatt-overlay.nix;
   ourNixpkgs = import ./nixpkgs-patch.nix nixpkgs;
-  pkgs = import ourNixpkgs { overlays = [ cloudwattOverlay jobsetOverlay ]; };
-  cloudwattOverlay = import ./cloudwatt-overlay.nix { inherit contrail; };
+  pkgs = import ourNixpkgs { overlays = [ toolsOverlay contrailOverlay cloudwattOverlay jobsetOverlay ]; };
   getCommitId = pkgs.runCommand "nixpkgs-cloudwatt-commit-id" { buildInputs = [ pkgs.git ]; } ''
     git -C ${cloudwatt} rev-parse HEAD > $out
   '';
   commitId = builtins.replaceStrings ["\n"] [""] (builtins.readFile getCommitId);
-  genDockerPushJobs = drvs:
-    pkgs.lib.mapAttrs' (n: v: pkgs.lib.nameValuePair (n) (pkgs.lib.dockerPushImage v commitId unsetProxyForSkopeo)) drvs;
-  genDebPublishJobs = drvs:
-    pkgs.lib.mapAttrs' (n: v: pkgs.lib.nameValuePair (n) (pkgs.lib.publishDebianPkg aptlyUrl v unsetProxyForAptly)) drvs;
+  genDockerPushJobs =
+    pkgs.lib.mapAttrs' (n: v: pkgs.lib.nameValuePair (n) (pkgs.lib.dockerPushImage v commitId unsetProxyForSkopeo));
+  genDebPublishJobs =
+    pkgs.lib.mapAttrs' (n: v: pkgs.lib.nameValuePair (n) (pkgs.lib.publishDebianPkg aptlyUrl v unsetProxyForAptly));
 
   jobs = {
-    inherit (pkgs) debianPackages dockerImages contrail32Cw test;
+    inherit (pkgs) debianPackages dockerImages test;
+    contrail32Cw = pkgs.contrail32Cw.lib.sanitizeOutputs pkgs.contrail32Cw;
   }
   // pkgs.lib.optionalAttrs pushToDockerRegistry {
     pushDockerImages = genDockerPushJobs (
@@ -51,14 +54,11 @@ let
   excludedJobs = builtins.map (pkgs.lib.splitString ".") [
     # These are not derivations
     "test.lib"
-    "contrail32Cw.lib.buildVrouter"
     # Upload fail because image is to big
     "pushDockerImages.contrailVrouter"
     # FIXME: because of callPackages theses attributes are added to the set
     "dockerImages.pulled.override"
     "dockerImages.pulled.overrideDerivation"
-    # All nixpkgs python packages are exposed :/
-    "contrail32Cw.pythonPackages"
   ];
 
 in

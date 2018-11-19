@@ -1,4 +1,4 @@
-{ contrail }: self: super:
+self: super:
 let inherit (super) callPackage callPackages;
 in {
 
@@ -20,11 +20,7 @@ in {
 
   consulTemplateMock = callPackage ./pkgs/consul-template-mock { };
 
-  contrail32Cw = import ./pkgs/contrail32Cw {
-    pkgs = self;
-    contrailPath = contrail;
-    ubuntuKernelHeaders = self.ubuntuKernelHeaders;
-  };
+  contrail32Cw = callPackage ./pkgs/contrail32Cw { };
 
   cwK8sHealthmonitor = callPackages ./pkgs/cw-k8s-healthmonitor { };
 
@@ -33,7 +29,7 @@ in {
     skydive = self.skydive.override (_: { enableStatic = true; });
   };
 
-  dockerImages = callPackages ./pkgs/docker-images { contrailPath = contrail; };
+  dockerImages = callPackages ./pkgs/docker-images { };
 
   hydra = callPackages ./pkgs/hydra { hydra = super.hydra; };
 
@@ -53,10 +49,7 @@ in {
 
   openstackClient = callPackage ./pkgs/openstackclient { };
 
-  test = callPackages ./test {
-    contrailPath = contrail;
-    contrailPkgs = self.contrail32Cw;
-  };
+  test = callPackages ./test { };
 
   ubuntuKernelHeaders = callPackages ./pkgs/ubuntu-kernel-headers { };
 

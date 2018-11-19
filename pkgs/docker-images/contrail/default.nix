@@ -1,17 +1,17 @@
-{ callPackage, pkgs, lib, contrail32Cw, contrailPath, waitFor, redis }:
+{ callPackage, pkgs, lib, contrail32Cw, waitFor, redis }:
 
 let config = import ./config.nix { inherit pkgs lib; };
 
 in {
+
   contrailVrouter = callPackage ./vrouter {
-    inherit contrailPath;
     contrailPkgs = contrail32Cw;
     configFiles = { contrail = config; };
   };
 
-  contrailApi = lib.buildContrailImageWithPerp {
+  contrailApiServer = lib.buildContrailImageWithPerp {
     name = "opencontrail/api";
-    command = "${contrail32Cw.api}/bin/contrail-api --conf_file /run/consul-template-wrapper/contrail/contrail-api.conf";
+    command = "${contrail32Cw.apiServer}/bin/contrail-api --conf_file /run/consul-template-wrapper/contrail/contrail-api.conf";
     preStartScript = lib.myIp + ''
       consul-template-wrapper -- -once \
         -template="${config.api}:/run/consul-template-wrapper/contrail/contrail-api.conf" \
