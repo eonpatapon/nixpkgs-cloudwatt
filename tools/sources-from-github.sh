@@ -6,7 +6,8 @@
 cat >/tmp/tmp.lst <<EOF
 controller cloudwatt contrail-controller R3.2-cloudwatt
 neutronPlugin cloudwatt contrail-neutron-plugin R3.2-cloudwatt
-vrouter nlewo contrail-vrouter R3.2-cloudwatt
+vrouter cloudwatt contrail-vrouter R3.2-cloudwatt
+generateds cloudwatt contrail-generateDS R3.2-cloudwatt
 EOF
 
 echo "# DO NOT EDIT"
