@@ -99,13 +99,16 @@ let
         diskSize = 10000;
         memorySize = 8192;
         cores = 2;
+        # vrouter-agent is now using vhost0 to connect to the controller
+        # so the controller must access vlan2 to reply
+        vlans = [ 1 2 ];
       };
 
-      # forward some ports on the host for debugging
-      virtualisation.qemu.networkingOptions = [
-        "-net nic,netdev=user.0,model=virtio"
-        "-netdev user,id=user.0,hostfwd=tcp::2221-:22"
-      ];
+      # # forward some ports on the host for debugging
+      # virtualisation.qemu.networkingOptions = [
+      #   "-net nic,netdev=user.0,model=virtio"
+      #   "-netdev user,id=user.0,hostfwd=tcp::2221-:22"
+      # ];
 
     };
 
