@@ -54,8 +54,6 @@ let
   excludedJobs = builtins.map (pkgs.lib.splitString ".") [
     # These are not derivations
     "test.lib"
-    # Upload fail because image is to big
-    "pushDockerImages.contrailVrouter"
     # FIXME: because of callPackages theses attributes are added to the set
     "dockerImages.pulled.override"
     "dockerImages.pulled.overrideDerivation"

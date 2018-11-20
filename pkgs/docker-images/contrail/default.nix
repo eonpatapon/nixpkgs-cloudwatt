@@ -4,11 +4,6 @@ let config = import ./config.nix { inherit pkgs lib; };
 
 in {
 
-  contrailVrouter = callPackage ./vrouter {
-    contrailPkgs = contrail32Cw;
-    configFiles = { contrail = config; };
-  };
-
   contrailApiServer = lib.buildContrailImageWithPerp {
     name = "opencontrail/api";
     command = "${contrail32Cw.apiServer}/bin/contrail-api --conf_file /run/consul-template-wrapper/contrail/contrail-api.conf";

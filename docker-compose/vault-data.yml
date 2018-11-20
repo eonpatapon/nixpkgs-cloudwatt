@@ -1,6 +1,0 @@
-secrets:
-  - path: secret/opencontrail
-    values:
-      queue_password: development
-      ifmap_password: development
-      service_password: development
