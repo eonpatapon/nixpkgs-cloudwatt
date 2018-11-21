@@ -8,7 +8,7 @@ hydra.overrideAttrs(old: {
     src = fetchFromGitHub {
       owner = "nlewo";
       repo = "hydra";
-      rev = "40f1e1e858c03dd5625170674b13312552e8b54f";
-      sha256 = "09n76rbp4s64d1xcnwl6yzz0ga1qwjf8f7l4lfq972w96rh1gyp8";
+      rev = "e92720619e801b58946b53ab093b71cc279260ce";
+      sha256 = "00vqdjv4wakl8x4f3x9fkfn4lzg46l521l4hmprhv5vpy9kl3m2f";
     };
 })

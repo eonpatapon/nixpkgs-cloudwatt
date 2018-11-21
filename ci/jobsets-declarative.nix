@@ -16,7 +16,7 @@ let
       inputs = {
         cloudwatt = {
           type = "git";
-          value = "${info.source_repo_url} ${info.source_branch} keepDotGit";
+          value = "${info.target_repo_url} merge-requests/${info.iid}/head keepDotGit";
           emailresponsible = false;
         };
         bootstrap_pkgs = {
