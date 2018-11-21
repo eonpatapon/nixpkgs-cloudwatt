@@ -11,7 +11,7 @@ let
   # $ for t in obj_uuid_table obj_fq_name_table; do echo "COPY config_db_uuid.$t TO '/tmp/cassandra-dump/config_db_uuid.$t.csv';" | cqlsh; done
   #
   # Then upload the tgz to Nexus:
-  # $ curl -v -u deployment:PASSWORD --upload-file dump.tgz http://nexus.int0.aub.cloudwatt.net/nexus/content/sites/nix
+  # $ curl -v -u deployment:PASSWORD --upload-file dump.tgz http://nexus.int0.aub.cloudwatt.net/nexus/content/sites/nix/
   # where PASSWORD can be found in the Nexus databag of int0
   dump = pkgs.fetchzip {
     name = "cassandra-dump";
