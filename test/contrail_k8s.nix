@@ -128,7 +128,7 @@ let
   };
 
   vrouter = ip: { config, ... }: {
-    imports = [ (contrailPkgs.modules + "/compute-node.nix") ];
+    imports = [ (contrailPkgs.modules + "/contrail-vrouter-agent.nix") ];
 
     config = {
       _module.args = { inherit pkgs contrailPkgs; };
