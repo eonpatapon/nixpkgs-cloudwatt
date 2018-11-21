@@ -7,10 +7,6 @@
 
   perp = callPackage ./perp.nix { };
 
-  contrailLoadDatabase = callPackage ./contrail-load-database.nix { contrailPkgs = contrail32Cw; };
-
-  gremlinDump = callPackage ./gremlin-dump.nix { contrailPkgs = contrail32Cw; };
-
   infraK8S = callPackage ./infra_k8s.nix { };
 
   rabbitmqK8S = callPackage ./rabbitmq_k8s.nix { };
