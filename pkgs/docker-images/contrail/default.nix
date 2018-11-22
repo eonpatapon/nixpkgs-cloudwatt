@@ -34,7 +34,7 @@ in {
       consul-template-wrapper -- -once \
         -template="${config.control}:/run/consul-template-wrapper/contrail/contrail-control.conf"
     '';
-    fluentd = config.fluentdForCService;
+    fluentd = config.fluentdForCService {};
   };
 
   contrailAnalytics = lib.buildContrailImageWithPerps {
@@ -69,13 +69,13 @@ in {
         preStartScript = ''
           ${waitFor}/bin/wait-for opencontrail-discovery.service:5998 -t 300 -q
         '';
-        fluentd = config.fluentdForCService;
+        fluentd = config.fluentdForCService {};
         after = ["consul-template"];
       }
       {
         name = "opencontrail-query-engine";
         command = "${contrail32Cw.queryEngine}/bin/qed --conf_file /run/consul-template-wrapper/contrail/contrail-query-engine.conf";
-        fluentd = config.fluentdForCService;
+        fluentd = config.fluentdForCService { extraFilters = config.extraFilters; };
         after = ["consul-template"];
       }
     ];

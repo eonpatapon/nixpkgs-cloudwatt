@@ -518,7 +518,18 @@ in rec {
     ];
   };
 
-  fluentdForCService = {
+  # Add the name of each analytics service in logs, because in Elasticsearch there is no tag for services
+  extraFilters =  [
+    {
+      type = "record_transformer";
+      tag = "";
+      record = {
+        service_name = "\${tag_parts[1]}";
+      };
+    }
+  ];
+
+  fluentdForCService = { extraFilters ? [] }: {
     source = {
       type = "stdout";
     };
@@ -540,6 +551,6 @@ in rec {
           ];
         };
       }
-    ];
+    ] ++ extraFilters;
   };
 }
