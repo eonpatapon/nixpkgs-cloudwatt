@@ -20,6 +20,7 @@ rec {
   keystoneAdminTokenRc = pkgs.writeTextFile {
     name = "admin-token.openrc";
     text = ''
+      export OS_IDENTITY_API_VERSION="2.0"
       export OS_URL="http://${keystoneApiAdminHost}.${config.networking.domain}:${toString adminApiPort}/v2.0"
       export OS_TOKEN="${keystoneAdminToken}"
     '';
@@ -28,6 +29,7 @@ rec {
   keystoneAdminRc = pkgs.writeTextFile {
     name = "admin.openrc";
     text = ''
+      export OS_IDENTITY_API_VERSION="2.0"
       export OS_AUTH_TYPE="v2password"
       export OS_AUTH_URL="http://${keystoneApiAdminHost}.${config.networking.domain}:${toString adminApiPort}/v2.0"
       export OS_REGION_NAME="${region}"

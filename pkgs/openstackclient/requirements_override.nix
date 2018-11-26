@@ -1,19 +1,27 @@
 { pkgs, python }:
 
-self: super: rec {
+self: super: {
 
-  vcversioner = python.mkDerivation {
-    name = "vcversioner-2.16.0.0";
-    src = pkgs.fetchurl { url = "https://files.pythonhosted.org/packages/c5/cc/33162c0a7b28a4d8c83da07bc2b12cee58c120b4a9e8bba31c41c8d35a16/vcversioner-2.16.0.0.tar.gz"; sha256 = "dae60c17a479781f44a4010701833f1829140b1eeccd258762a74974aa06e19b"; };
-    doCheck = false;
-  };
-
-  "jsonschema" = python.overrideDerivation super."jsonschema" (old: {
-    propagatedBuildInputs = old.propagatedBuildInputs ++ [ vcversioner ];
+  jsonschema = python.overrideDerivation super.jsonschema (old: {
+    propagatedBuildInputs = old.propagatedBuildInputs ++ [ super.vcversioner ];
   });
 
-  "requestsexceptions" = python.overrideDerivation super."requestsexceptions" (old: {
-    propagatedBuildInputs = old.propagatedBuildInputs ++ [ super."pbr" ];
+  python-dateutil = python.overrideDerivation super.python-dateutil (old: {
+    propagatedBuildInputs = old.propagatedBuildInputs ++ [ super.setuptools-scm ];
   });
+
+  requestsexceptions = python.overrideDerivation super.requestsexceptions (old: {
+    propagatedBuildInputs = old.propagatedBuildInputs ++ [ super.pbr ];
+  });
+
+  openstackclient = with super;
+    let
+      drv = python.withPackages { inherit python-openstackclient python-octaviaclient; };
+      name = "openstackclient-${(builtins.parseDrvName(super.python-openstackclient.name)).version}";
+    in drv.interpreter.overrideDerivation (old: {
+      inherit name;
+      # keep only bin/openstack
+      buildCommand = old.buildCommand + ''rm $out/bin/.python* $out/bin/python*'';
+    });
 
 }
