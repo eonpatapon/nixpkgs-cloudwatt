@@ -93,6 +93,12 @@ in {
           "internal_url" = "http://neutron-api-pods.service:9696";
           "public_url" = "http://neutron-api-pods.service:9696";
         };
+        "load-balancer" = {
+          "name" = "neutron";
+          "admin_url" = "http://neutron-api-pods.service:9696";
+          "internal_url" = "http://neutron-api-pods.service:9696";
+          "public_url" = "http://neutron-api-pods.service:9696";
+        };
       };
     };
 

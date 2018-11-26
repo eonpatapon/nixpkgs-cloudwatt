@@ -85,6 +85,7 @@ let
   testScript = ''
     $machine->waitForUnit("neutron.service");
     $machine->waitUntilSucceeds("source /etc/openstack/admin.openrc && openstack network list");
+    $machine->waitUntilSucceeds("source /etc/openstack/admin.openrc && openstack loadbalancer pool list");
   '';
 
 in
