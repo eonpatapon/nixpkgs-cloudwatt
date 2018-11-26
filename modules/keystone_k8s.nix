@@ -88,16 +88,19 @@ in {
       serviceConfig.RemainAfterExit = true;
       wantedBy = [ "kubernetes.target" ];
       after = [ "kube-bootstrap.service" "mysql-bootstrap.service" ];
-      path = with pkgs; [ kubectl docker waitFor openstackClient ];
+      path = with pkgs; [ kubectl docker waitFor openstackClient which ];
       script = ''
         kubectl apply -f /etc/kubernetes/keystone/
       '';
-      postStart = with keystoneConfig; with keystoneLib; ''
+      postStart = with keystoneConfig; with keystoneLib;
+        let
+          catalog = createCatalog (defaultCatalog // cfg.catalog) region;
+          roles = createRoles cfg.roles;
+          projects = createProjects (defaultProjects // cfg.projects);
+        in ''
         wait-for ${keystoneApiAdminHost}:${toString adminApiPort} -q -t 300
         source ${keystoneAdminTokenRc}
-        ${createCatalog (defaultCatalog // cfg.catalog) region}
-        ${createRoles cfg.roles}
-        ${createProjects (defaultProjects // cfg.projects)}
+        echo "${concatStringsSep "\n" (catalog ++ roles ++ projects)}" | openstack
       '';
     };
 
