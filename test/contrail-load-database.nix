@@ -3,8 +3,6 @@
 with import (pkgs.path + /nixos/lib/testing.nix) { system = builtins.currentSystem; };
 
 let
-  apiConf = import (contrailPkgs.path + "/test/configuration/R3.2/api.nix") { inherit pkgs; };
-
   # First generate a dump:
   # $ mkdir -p /tmp/cassandra-dump'
   # $ cqlsh -e "DESC SCHEMA" > /tmp/cassandra-dump/schema.cql'
@@ -39,7 +37,6 @@ let
 
       contrail.api = {
         enable = true;
-        configFile = apiConf;
         waitFor = false;
       };
 
