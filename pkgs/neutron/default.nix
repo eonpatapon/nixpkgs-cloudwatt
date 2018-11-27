@@ -16,8 +16,8 @@ in python27Packages.buildPythonApplication {
   # prb needs a git repository to get the version
   src = fetchgit {
     url = "${lib.constants.gitUrl}/applications/neutron.git";
-    rev = "7b7c044a3b8f63f2a6a39ddc119dfae706d02ad4";
-    sha256 = "1334fkh6jbinry0qvmj1n7ydih17zaas3i7v4apgjb7vs104hhx6";
+    rev = "a5c4bf1f841a0c9e9dcc9b6ddc40b6b851065810";
+    sha256 = "0bxrxvm0dmdv3xrfmdy8m0b6nbnnhlr8sbnb79gfvcwp0izv1sly";
     leaveDotGit = true;
   };
 

@@ -1,3 +1,3 @@
 {
-  gitUrl = "git.corp.cloudwatt.com";
+  gitUrl = "https://git.corp.cloudwatt.com";
 }
