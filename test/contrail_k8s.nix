@@ -46,7 +46,7 @@ let
         };
       };
 
-      services.cassandra = {
+      cassandra = {
         enable = true;
         rpcAddress = "169.254.1.52";
       };
