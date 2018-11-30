@@ -51,6 +51,8 @@ in {
 
   openstackClient = callPackage ./pkgs/openstackclient { };
 
+  calicoctl = callPackage ./pkgs/calicoctl { };
+
   test = callPackages ./test { };
 
   ubuntuKernelHeaders = callPackages ./pkgs/ubuntu-kernel-headers { };

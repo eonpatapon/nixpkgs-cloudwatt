@@ -151,6 +151,7 @@ let
       networking.domain = "dev0.loc.cloudwatt.net";
       networking.interfaces.eth1.ipv4.routes = [
         { address = "10.44.44.0"; prefixLength = 24; via = "192.168.1.1"; }
+        { address = "10.44.43.0"; prefixLength = 24; via = "192.168.1.1"; }
         { address = "169.254.1.0"; prefixLength = 24; via = "192.168.1.1"; }
       ];
 
