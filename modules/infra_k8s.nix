@@ -290,7 +290,7 @@ in {
         serviceConfig.RemainAfterExit = true;
         wantedBy = [ "kubernetes.target" ];
         after = [ "vault.service" "consul.service" "kube-apiserver.service" "kubelet-bootstrap.service" ];
-        path = with pkgs; [ kubectl docker waitFor ];
+        path = with pkgs; [ kubectl docker waitFor calicoctl ];
         script = ''
           wait-for localhost:8080 -q -t 300
           # Even if the kube-apiserver is listening it might not
@@ -323,6 +323,7 @@ in {
             echo "Waiting on calico pods to be ready..."
             sleep 1
           done
+          calicoctl apply -f /etc/calico/pool.json
           kubectl --namespace kube-system get pods
           kubectl apply -f /etc/kubernetes/infra/stage2
         '';
@@ -422,6 +423,9 @@ in {
                 log_level = "INFO";
                 ipam = {
                   type = "calico-ipam";
+                  ipv4_pools = [
+                    "10.44.44.0/24"
+                  ];
                 };
                 policy = {
                   type = "k8s";
@@ -509,6 +513,8 @@ in {
       };
 
       environment.etc = with infraConfig; {
+        "calico/calicoctl.cfg".source = calicoctlConf;
+        "calico/pool.json".source = calicoPool;
         "docker/daemon.json".text = ''
           {
             "dns-opts": ["ndots:2"]

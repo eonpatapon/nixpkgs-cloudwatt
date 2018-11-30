@@ -92,7 +92,7 @@ let
     control1 = {
       overrides = {
         kubernetes.modules.control.configuration = {
-          ipAddress = "10.44.44.50";
+          ipAddress = "10.44.43.50";
           kubernetes.modules.control-1.configuration = {
             resources.requests.memory = mkForce "5Mi";
           };

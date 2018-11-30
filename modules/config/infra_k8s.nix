@@ -4,7 +4,8 @@ with builtins;
 with pkgs.lib;
 
 rec {
-
+  
+  certs = config.infra.k8s.certificates;
   region = head (splitString "." config.networking.domain);
 
   fluentdConf = pkgs.writeTextFile {
