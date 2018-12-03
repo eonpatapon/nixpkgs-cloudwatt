@@ -7,9 +7,7 @@ let
 
   cfg = config.contrail.k8s;
 
-  contrailConfig = import ./config/contrail_k8s.nix { inherit pkgs; };
-
-  defaultProvision = with contrailConfig; {
+  defaultProvision = {
     namespace = "contrail_api_cli.provision";
     defaults = {};
     provision = {
@@ -18,8 +16,8 @@ let
       };
       bgp-router = [
         {
-          router-ip = controlIP;
-          router-name = controlHostname;
+          router-ip = "10.44.44.50";
+          router-name = "control-1";
           router-address-families = [
             "route-target"
             "inet-vpn"
@@ -109,18 +107,10 @@ in {
       aliases = [ "opencontrail-config-zookeeper" ];
     };
 
-    environment.etc = with contrailConfig; {
-      "kubernetes/contrail/discovery.deployment.json".text = discoveryDeployment;
-      "kubernetes/contrail/discovery.service.json".text = contrailService "discovery";
-      "kubernetes/contrail/api.deployment.json".text = apiDeployment;
-      "kubernetes/contrail/api.service.json".text = contrailService "api";
-      "kubernetes/contrail/schema-transformer.deployment.json".text = schemaTransformerDeployment;
-      "kubernetes/contrail/svc-monitor.deployment.json".text = svcMonitorDeployment;
-      "kubernetes/contrail/analytics.deployment.json".text = analyticsDeployment;
-      "kubernetes/contrail/analytics.service.json".text = contrailService "analytics";
-      "kubernetes/contrail/control.deployment.json".text = controlDeployment;
+    environment.etc = {
       "contrail/provision.json".text = toJSON (recursiveUpdate defaultProvision cfg.provision);
-    };
+    } // mapAttrs' (service: source: nameValuePair "kubernetes/contrail/${service}.json" { inherit source; })
+      pkgs.k8sDeployments.contrail.test;
 
     environment.systemPackages = with pkgs; [
       contrailApiCliWithExtra
