@@ -1,11 +1,35 @@
-{ pkgs
-, lib
-, stdenv
-}:
+{ pkgs, lib }:
 
 with import (pkgs.path + /nixos/lib/testing.nix) { system = builtins.currentSystem; };
 
 let
+
+  k8sDeployments = { ... }: {
+
+    require = [ ../pkgs/k8s-deployments/modules/deployment.nix ];
+
+    kubernetes.modules.service1 = {
+      module = "cwDeployment";
+      configuration = {
+        application = "test";
+        service = "service1";
+        image = "${service1Image.imageName}:${lib.imageHash service1Image}";
+        port = 1;
+      };
+    };
+
+    kubernetes.modules.service2 = {
+      module = "cwDeployment";
+      configuration = {
+        application = "test";
+        service = "service2";
+        image = "${service2Image.imageName}:${lib.imageHash service2Image}";
+        vaultPolicy = "service2";
+        port = 1;
+      };
+    };
+
+  };
 
   service1 = pkgs.writeShellScriptBin "service1" ''
     while true
@@ -28,19 +52,6 @@ let
         };
       }
     ];
-  };
-
-  service1Deployment = lib.mkJSONDeployment {
-    application = "test";
-    service = "service1";
-    containers = [
-      { image = "${service1Image.imageName}:${lib.imageHash service1Image}"; }
-    ];
-  };
-
-  service1Service = lib.mkJSONService {
-    application = "test";
-    service = "service1";
   };
 
   service2 = pkgs.writeShellScriptBin "service2" ''
@@ -73,34 +84,6 @@ let
         '';
       }
     ];
-  };
-
-  service2Deployment = lib.mkJSONDeployment' {
-    application = "test";
-    service = "service2";
-    vaultPolicy = "service2";
-    containers = [
-      {
-        image = "${service2Image.imageName}:${lib.imageHash service2Image}";
-        env = [
-          { name = "test"; value = "test"; }
-        ];
-      }
-    ];
-  } {
-    spec = {
-      template = {
-        spec = {
-          # mode for volumeMounts so that user can access it
-          securityContext = { fsGroup = 65534; };
-        };
-      };
-    };
-  };
-
-  service2Service = lib.mkJSONService {
-    application = "test";
-    service = "service2";
   };
 
   master = { config, ... }: {
@@ -162,10 +145,7 @@ let
       environment.systemPackages = with pkgs; [ jq kubectl docker vault dnsutils openstackClient ];
 
       environment.etc = {
-        "kubernetes/test/service1.deployment.json".text = service1Deployment;
-        "kubernetes/test/service2.deployment.json".text = service2Deployment;
-        "kubernetes/test/service1.service.json".text = service1Service;
-        "kubernetes/test/service2.service.json".text = service2Service;
+        "kubernetes/test/resources.json".source = lib.buildK8SResources k8sDeployments;
       };
 
     };
@@ -182,13 +162,13 @@ let
     # check consul provisionning
     $master->succeed("curl -s http://consul:8500/v1/kv/service2 | jq -r '.[].Value' | base64 -d | jq -e '.data == \"foo\"'");
     # check k8s deployment
-    $master->succeed("kubectl apply -f /etc/kubernetes/test/");
+    $master->succeed("kubectl apply -f /etc/kubernetes/test");
     $master->waitUntilSucceeds("kubectl get pods -l application=test | wc -l | grep -q 3");
     $master->waitUntilSucceeds("kubectl get services | grep -q test-service1");
     # check kube2consul
     $master->waitUntilSucceeds("curl -s consul:8500/v1/catalog/services | grep -q test-service1");
     # check networking
-    $master->succeed("kubectl exec \$(kubectl get pod -l service=service1 -o jsonpath='{.items[0].metadata.name}') -- ping -c1 test-service2.service");
+    $master->succeed("kubectl exec \$(kubectl get pod -l service=service1 -o jsonpath='{.items[0].metadata.name}') -- ping -c1 test-service2-pods.service");
     # check consul-template with vault secrets
     $master->waitUntilSucceeds("kubectl exec \$(kubectl get pod -l service=service2 -o jsonpath='{.items[0].metadata.name}') -- cat /run/consul-template-wrapper/result | grep -q foo");
     $master->waitUntilSucceeds("kubectl exec \$(kubectl get pod -l service=service2 -o jsonpath='{.items[0].metadata.name}') -- cat /run/consul-template-wrapper/result | grep -q plop");

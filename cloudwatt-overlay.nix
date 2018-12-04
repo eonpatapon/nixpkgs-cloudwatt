@@ -31,6 +31,8 @@ in {
 
   dockerImages = callPackages ./pkgs/docker-images { };
 
+  k8sDeployments = callPackage ./pkgs/k8s-deployments { };
+
   hydra = callPackages ./pkgs/hydra { hydra = super.hydra; };
 
   tools = callPackages ./pkgs/tools { };

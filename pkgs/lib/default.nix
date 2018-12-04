@@ -35,9 +35,7 @@ let
 
     inherit (trivialBuilders) writeConsulTemplateFile writeYamlFile;
 
-    inherit (k8s) mkJSONDeployment mkJSONDeployment' mkJSONService mkHTTPGetProbe;
-
-    buildK8SResources = configuration: kubenix.buildResources { inherit configuration; };
+    inherit (k8s) buildK8SResources buildK8SDeployments;
 
   };
 
