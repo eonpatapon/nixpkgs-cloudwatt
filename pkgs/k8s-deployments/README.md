@@ -20,6 +20,15 @@ The benefits of specifying docker image and deployment in the same place:
    production environement will give the *git rev* needed to build the image that
    is running as well as the deployment files.
 
+Workflow
+========
+
+  1. Changes are made to docker images
+  2. Deployments are updated if needed
+  3. A pull request is made
+  4. If tests are OK generated deployment files can be copied to the revelant
+     `platforms` repo for deployment
+
 Usage
 =====
 
