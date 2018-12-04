@@ -48,11 +48,6 @@ Examples:
     ├── schema-transformer.yml
     └── svc-monitor.yml
 
-    $ tools/copy-deployment.sh contrail lab2 /tmp/test2 discovery
-    ...
-    $ tree /tmp/test2
-    └── discovery.yml
-
     $ cat /tmp/test2/discovery.yml | yq '.items[].metadata.labels'
     {
       "kubenix/build": "68552a66663ff1dcf78bbc2c979f48adc9cd8916",

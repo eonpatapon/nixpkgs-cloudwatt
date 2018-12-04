@@ -109,8 +109,8 @@ in {
 
     environment.etc = {
       "contrail/provision.json".text = toJSON (recursiveUpdate defaultProvision cfg.provision);
-    } // mapAttrs' (service: source: nameValuePair "kubernetes/contrail/${service}.json" { inherit source; })
-      pkgs.k8sDeployments.contrail.test;
+      "kubernetes/contrail".source = pkgs.k8sDeployments.contrail.test;
+    };
 
     environment.systemPackages = with pkgs; [
       contrailApiCliWithExtra
@@ -130,7 +130,7 @@ in {
         CONTRAIL_API_HOST = "opencontrail-api.service";
       };
       script = ''
-        kubectl apply -f /etc/kubernetes/contrail
+        kubectl apply -f /etc/kubernetes/contrail/
       '';
       postStart = ''
         wait-for opencontrail-api.service:8082 -t 300 -q

@@ -35,7 +35,7 @@ let
 
     inherit (trivialBuilders) writeConsulTemplateFile writeYamlFile;
 
-    buildK8SResources = configuration: kubenix.buildResources { inherit configuration; };
+    inherit (k8s) buildK8SResources buildK8SDeployments;
 
   };
 

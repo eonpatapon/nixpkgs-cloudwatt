@@ -1,4 +1,4 @@
-{ lib, dockerImages, buildAppDeployment }:
+{ lib, dockerImages }:
 
 with lib;
 with dockerImages;
@@ -6,9 +6,6 @@ with dockerImages;
 let
 
   noLb = _: _: resource: ! (hasSuffix "-lb" resource.metadata.name);
-
-  buildDeployments =
-    mapAttrs (_: { deployment, config ? {} }: buildAppDeployment deployment config);
 
   defaultDeployments = {
     apiServer.deployment = ./api-server.nix;
@@ -18,7 +15,7 @@ let
     analytics.deployment = ./analytics.nix;
     control1 = {
       deployment = ./control.nix;
-      config.overrides = {
+      overrides = {
         kubernetes.modules.control.configuration = {
           number = 1;
         };
@@ -26,7 +23,7 @@ let
     };
     control2 = {
       deployment = ./control.nix;
-      config.overrides = {
+      overrides = {
         kubernetes.modules.control.configuration = {
           number = 2;
         };
@@ -35,16 +32,16 @@ let
   };
 
   lab2Deployments = recursiveUpdate defaultDeployments {
-    control1.config.overrides = {
+    control1.overrides = {
       kubernetes.modules.control.configuration.ipAddress = "10.35.6.10";
     };
-    control2.config.overrides = {
+    control2.overrides = {
       kubernetes.modules.control.configuration.ipAddress = "10.35.6.11";
     };
   };
 
   testDeployments = removeAttrs (recursiveUpdate defaultDeployments {
-    apiServer.config = {
+    apiServer = {
       filter = noLb;
       overrides = {
         kubernetes.modules.api.configuration = {
@@ -56,7 +53,7 @@ let
         };
       };
     };
-    discovery.config = {
+    discovery = {
       filter = noLb;
       overrides = {
         kubernetes.modules.discovery.configuration = {
@@ -68,7 +65,7 @@ let
         };
       };
     };
-    schemaTransformer.config = {
+    schemaTransformer = {
       overrides = {
         kubernetes.modules.schema-transformer.configuration = {
           resources.requests.memory = mkForce "5Mi";
@@ -76,7 +73,7 @@ let
         };
       };
     };
-    svcMonitor.config = {
+    svcMonitor = {
       overrides = {
         kubernetes.modules.svc-monitor.configuration = {
           resources.requests.memory = mkForce "5Mi";
@@ -84,7 +81,7 @@ let
         };
       };
     };
-    analytics.config = {
+    analytics = {
       overrides = {
         kubernetes.modules.analytics.configuration = {
           resources.requests.memory = mkForce "5Mi";
@@ -92,7 +89,7 @@ let
         };
       };
     };
-    control1.config = {
+    control1 = {
       overrides = {
         kubernetes.modules.control.configuration = {
           ipAddress = "10.44.44.50";
@@ -106,8 +103,8 @@ let
 
 in {
 
-  lab2 = buildDeployments lab2Deployments;
+  lab2 = buildK8SDeployments lab2Deployments;
 
-  test = buildDeployments testDeployments;
+  test = buildK8SDeployments testDeployments;
 
 }
