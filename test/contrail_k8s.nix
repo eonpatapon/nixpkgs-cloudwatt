@@ -8,6 +8,12 @@ let
   publicNetPrefix = "10.0.0.0";
   publicNetPrefixLen = 24;
 
+  certs = import (pkgs.path + /nixos/tests/kubernetes/certs.nix) {
+    inherit pkgs;
+    externalDomain = "dev0.loc.cloudwatt.net";
+    kubelets = [ "controller" ];
+  };
+
   controller = { config, ... }: {
 
     imports = [
@@ -34,6 +40,8 @@ let
 
       infra.k8s = {
         enable = true;
+        roles = [ "master" "node" ];
+        certificates = certs;
         externalServices = {
           opencontrail-config-cassandra = {
             address = "169.254.1.52";
@@ -233,7 +241,7 @@ let
 
 in
   makeTest {
-    name = "contrail";
+    name = "contrail-k8s";
     nodes = {
       inherit controller;
       # IPs for vrouters will be 192.168.1.{2,3}

@@ -7,6 +7,7 @@
 with import (pkgs.path + /nixos/lib/testing.nix) { system = builtins.currentSystem; };
 
 let
+
   apiConf = pkgs.writeTextFile {
     name = "contrail-api.conf";
     text = ''
@@ -39,6 +40,13 @@ let
       region=dev0
   '';
   };
+
+  certs = import (pkgs.path + /nixos/tests/kubernetes/certs.nix) {
+    inherit pkgs;
+    externalDomain = "dev0.loc.cloudwatt.net";
+    kubelets = [ "machine" ];
+  };
+
   machine = { config, ... }: {
     imports = [
       ../modules/neutron_k8s.nix
@@ -64,14 +72,19 @@ let
 
       neutron.k8s.enable = true;
 
-      infra.k8s.externalServices = {
-        opencontrail-api = {
-          address = "169.254.1.20";
-          port = 0;
+      infra.k8s = {
+        roles = [ "master" "node" ];
+        certificates = certs;
+        externalServices = {
+          opencontrail-api = {
+            address = "169.254.1.20";
+            port = 0;
+          };
         };
       };
 
       cassandra.enable = true;
+
       contrail = {
         api = {
           enable = true;

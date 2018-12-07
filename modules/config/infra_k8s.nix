@@ -1,4 +1,4 @@
-{ pkgs, lib, config, certs }:
+{ pkgs, lib, config }:
 
 with builtins;
 with pkgs.lib;
@@ -12,7 +12,7 @@ rec {
     text = ''
       <source>
         @type forward
-        bind 169.254.1.14
+        bind 169.254.2.1
         port 24224
       </source>
       <match **>
@@ -70,7 +70,7 @@ rec {
         # Setup pool CIDR
         daemonSets.calico-node = {
           spec.template.spec.containers.calico-node = {
-            env.CALICO_IPV4POOL_CIDR.value = config.services.kubernetes.clusterCidr;
+            env.CALICO_IPV4POOL_CIDR.value = "10.44.44.0/24";
           };
         };
         # Use our calico-kube-controllers image

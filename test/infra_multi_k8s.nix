@@ -11,6 +11,7 @@ let
     kubernetes.modules.service1 = {
       module = "cwDeployment";
       configuration = {
+        replicas = 2;
         application = "test";
         service = "service1";
         image = "${service1Image.imageName}:${lib.imageHash service1Image}";
@@ -21,6 +22,7 @@ let
     kubernetes.modules.service2 = {
       module = "cwDeployment";
       configuration = {
+        replicas = 2;
         application = "test";
         service = "service2";
         image = "${service2Image.imageName}:${lib.imageHash service2Image}";
@@ -89,7 +91,7 @@ let
   certs = import (pkgs.path + /nixos/tests/kubernetes/certs.nix) {
     inherit pkgs;
     externalDomain = "dev0.loc.cloudwatt.net";
-    kubelets = [ "master" ];
+    kubelets = [ "master" "node1" "node2" ];
   };
 
   master = { config, ... }: {
@@ -108,14 +110,8 @@ let
 
       infra.k8s = {
         enable = true;
-        roles = [ "master" "node" ];
+        roles = [ "master" ];
         certificates = certs;
-        externalServices = {
-          foo = {
-            address = "169.254.1.100";
-            port = 2222;
-          };
-        };
         seedDockerImages = [
           service1Image
           service2Image
@@ -140,8 +136,8 @@ let
       };
 
       virtualisation = {
-        diskSize = 10000;
-        memorySize = 4096;
+        diskSize = 4000;
+        memorySize = 2048;
       };
 
       # # forward some ports on the host for debugging
@@ -150,7 +146,7 @@ let
       #   "-netdev user,id=user.0,hostfwd=tcp::2222-:22"
       # ];
 
-      environment.systemPackages = with pkgs; [ jq kubectl docker vault dnsutils openstackClient ];
+      environment.systemPackages = with pkgs; [ jq kubectl docker vault dnsutils ];
 
       environment.etc = {
         "kubernetes/test/resources.json".source = lib.buildK8SResources k8sDeployments;
@@ -160,35 +156,77 @@ let
 
   };
 
+  node = { config, ... }: {
+
+    imports = [
+      ../modules/infra_k8s.nix
+    ];
+
+    config = {
+      _module.args = { inherit pkgs lib; };
+
+      services.openssh.enable = true;
+      services.openssh.permitRootLogin = "yes";
+      services.openssh.extraConfig = "PermitEmptyPasswords yes";
+      users.extraUsers.root.password = "";
+
+      infra.k8s = {
+        enable = true;
+        roles = [ "node" ];
+        certificates = certs;
+        seedDockerImages = [
+          service1Image
+          service2Image
+        ];
+      };
+
+      virtualisation = {
+        diskSize = 4000;
+        memorySize = 1024;
+      };
+
+      environment.systemPackages = with pkgs; [ jq docker dnsutils ];
+
+    };
+
+  };
+
   testScript = ''
+    startAll();
     $master->waitForUnit("docker.service");
     $master->waitForUnit("vault.service");
     $master->waitForUnit("consul.service");
     $master->waitForUnit("kube-bootstrap.service");
-    # check external service provisionning
-    $master->succeed("grep -q foo /etc/hosts");
-    # check consul provisionning
-    $master->succeed("curl -s http://consul:8500/v1/kv/service2 | jq -r '.[].Value' | base64 -d | jq -e '.data == \"foo\"'");
+    $node1->waitForUnit("kubelet.service");
+    $node2->waitForUnit("kubelet.service");
+    $master->waitUntilSucceeds("kubectl get nodes | tail -n +2 | grep Ready | wc -l | grep -q 3");
     # check k8s deployment
     $master->succeed("kubectl apply -f /etc/kubernetes/test");
-    $master->waitUntilSucceeds("kubectl get pods -l application=test | wc -l | grep -q 3");
-    $master->waitUntilSucceeds("kubectl get services | grep -q test-service1");
+    $master->waitUntilSucceeds("kubectl get pods -l application=test | wc -l | grep -q 5");
+    $master->waitUntilSucceeds("kubectl get services | grep -q test-service1-pods");
+    $master->waitUntilSucceeds("kubectl get services | grep -q test-service2-pods");
     # check kube2consul
-    $master->waitUntilSucceeds("curl -s consul:8500/v1/catalog/services | grep -q test-service1");
-    # check networking
-    $master->succeed("kubectl exec \$(kubectl get pod -l service=service1 -o jsonpath='{.items[0].metadata.name}') -- ping -c1 test-service2-pods.service");
-    # check consul-template with vault secrets
+    $master->waitUntilSucceeds("curl -s consul:8500/v1/catalog/services | grep -q test-service1-pods");
+    $master->waitUntilSucceeds("curl -s consul:8500/v1/catalog/services | grep -q test-service2-pods");
+    # check networking between nodes
+    $master->succeed("kubectl exec \$(kubectl get pod -l service=service1 -o jsonpath='{.items[0].metadata.name}') -- ping -c1 \$(kubectl get pod -l service=service1 -o jsonpath='{.items[1].status.podIP}')");
+    # check consul-template with vault secrets on both nodes
     $master->waitUntilSucceeds("kubectl exec \$(kubectl get pod -l service=service2 -o jsonpath='{.items[0].metadata.name}') -- cat /run/consul-template-wrapper/result | grep -q foo");
+    $master->waitUntilSucceeds("kubectl exec \$(kubectl get pod -l service=service2 -o jsonpath='{.items[1].metadata.name}') -- cat /run/consul-template-wrapper/result | grep -q foo");
     $master->waitUntilSucceeds("kubectl exec \$(kubectl get pod -l service=service2 -o jsonpath='{.items[0].metadata.name}') -- cat /run/consul-template-wrapper/result | grep -q plop");
+    $master->waitUntilSucceeds("kubectl exec \$(kubectl get pod -l service=service2 -o jsonpath='{.items[1].metadata.name}') -- cat /run/consul-template-wrapper/result | grep -q plop");
     # check fluentd forwarding
-    $master->waitUntilSucceeds("journalctl --unit fluentd --no-pager --grep service1");
+    $node1->waitUntilSucceeds("journalctl --unit fluentd --no-pager --grep service1");
+    $node2->waitUntilSucceeds("journalctl --unit fluentd --no-pager --grep service1");
   '';
 
 in
   makeTest {
-    name = "infra-k8s";
+    name = "infra-multi-k8s";
     nodes = {
       inherit master;
+      node1 = node;
+      node2 = node;
     };
     testScript = testScript;
   }
