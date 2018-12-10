@@ -13,6 +13,8 @@
 
   infraK8S = callPackage ./infra_k8s.nix { };
 
+  infraMultiK8S = callPackage ./infra_multi_k8s.nix { };
+
   rabbitmqK8S = callPackage ./rabbitmq_k8s.nix { };
 
   keystoneK8S = callPackage ./keystone_k8s.nix { };

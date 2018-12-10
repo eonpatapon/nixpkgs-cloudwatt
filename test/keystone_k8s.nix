@@ -4,6 +4,12 @@ with import (pkgs.path + /nixos/lib/testing.nix) { system = builtins.currentSyst
 
 let
 
+  certs = import (pkgs.path + /nixos/tests/kubernetes/certs.nix) {
+    inherit pkgs;
+    externalDomain = "dev0.loc.cloudwatt.net";
+    kubelets = [ "master" ];
+  };
+
   master = { config, ... }: {
 
     imports = [
@@ -17,6 +23,11 @@ let
       services.openssh.permitRootLogin = "yes";
       services.openssh.extraConfig = "PermitEmptyPasswords yes";
       users.extraUsers.root.password = "";
+
+      infra.k8s = {
+        roles = [ "master" "node" ];
+        certificates = certs;
+      };
 
       keystone.k8s = {
         enable = true;
@@ -71,7 +82,7 @@ let
 
 in
   makeTest {
-    name = "keystone";
+    name = "keystone-k8s";
     nodes = {
       inherit master;
     };
