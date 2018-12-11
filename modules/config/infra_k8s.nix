@@ -21,6 +21,34 @@ rec {
     '';
   };
 
+  calicoPool = pkgs.writeText "pool.json" ( toJSON {
+    kind = "IPPool";
+    apiVersion = "projectcalico.org/v3";
+    metadata = {
+      name = "fixed-ips-ippool";
+    };
+    spec = {
+      cidr = "10.44.43.0/24";
+      ipipMode = "Never";
+      natOutgoing = true;
+    };
+  });
+
+  calicoctlConf = pkgs.writeTextFile {
+    name = "calicoctl.cfg";
+    text = ''
+      apiVersion: projectcalico.org/v3
+      kind: CalicoAPIConfig
+      metadata:
+      spec:
+        datastoreType: "etcdv3"
+        etcdEndpoints: "https://etcd.${config.networking.domain}:2379"
+        etcdKeyFile: "${certs.master}/etcd-key.pem"
+        etcdCertFile: "${certs.master}/etcd.pem"
+        etcdCaCertFile: "${certs.master}/ca.pem"
+    '';
+  };
+
   calicoResources = pkgs.stdenv.mkDerivation {
     name = "calico-deployment";
     src = pkgs.fetchurl {

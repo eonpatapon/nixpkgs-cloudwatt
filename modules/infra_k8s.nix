@@ -541,6 +541,7 @@ in {
         kubectl
         docker
         vault
+        calicoctl
       ];
 
       environment.variables = {
