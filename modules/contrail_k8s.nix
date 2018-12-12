@@ -16,7 +16,7 @@ let
       };
       bgp-router = [
         {
-          router-ip = "10.44.44.50";
+          router-ip = "10.44.43.50";
           router-name = "control-1";
           router-address-families = [
             "route-target"
